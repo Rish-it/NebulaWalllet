@@ -2,51 +2,20 @@
 
 <div align="center">
   <img src="public/web.png" alt="NebulaWallet Banner" width="100%" />
-  <br />
-  <h3>Your secure gateway to the decentralized web and digital assets</h3>
 </div>
+
+A secure and intuitive cryptocurrency wallet for managing digital assets and accessing decentralized web applications.
 
 ## Features
 
-- **Modern & Intuitive Interface** - Beautiful UI designed with the latest design principles
-- **Enhanced Security** - Secure wallet generation and management
-- **Real-time Crypto Tracking** - Live prices, trends, and market data powered by CoinGecko
-- **Multi-currency Support** - Support for major cryptocurrencies
-- **Cross-platform Compatibility** - Works seamlessly across devices
-- **Portfolio Management** - Track your assets and performance with ease
+- **Generate Wallet**: Create new wallets with secure key generation
+- **Import Wallet**: Enter existing recovery phrases to access wallets
+- **Real-time Market Data**: Track crypto prices and trends via CoinGecko
+- **Multi-currency Support**: Manage various cryptocurrencies
+- **Security Controls**: Toggle visibility of sensitive information
+- **Copy to Clipboard**: Easily copy keys and recovery phrases
 
-## Live Demo
-
-Experience NebulaWallet at [nebulawallet.vercel.app](https://nebulawallet.vercel.app)
-
-## Technology Stack
-
-- **Next.js** - React framework with server-side rendering
-- **TypeScript** - Type-safe JavaScript
-- **Tailwind CSS** - Utility-first CSS framework
-- **bip39 & ed25519** - Cryptographic key generation
-- **Solana Web3.js** - Blockchain integration
-- **CoinGecko API** - Real-time cryptocurrency data
-
-## Dependencies
-
-The project uses the following key dependencies:
-
-- **UI Components**: Radix UI, Tailwind CSS, Lucide React
-- **Blockchain**: Solana Web3.js, ethers, wagmi, viem
-- **Cryptography**: bip39, tweetnacl, ed25519-hd-key, bs58
-- **Theming**: next-themes
-- **Animation**: Framer Motion
-- **Notifications**: Sonner
-
-## Getting Started
-
-### Prerequisites
-
-- Node.js 18.x or later
-- npm or yarn
-
-### Installation
+## Installation
 
 1. Clone the repository
 ```bash
@@ -54,62 +23,60 @@ git clone https://github.com/Rish-it/NebulaWallet.git
 cd NebulaWallet
 ```
 
-2. Install all dependencies with a single command
+2. Install dependencies
 ```bash
 npm install
 ```
-or if you prefer yarn:
-```bash
-yarn install
-```
 
-3. Create a local environment file
-```bash
-cp .env.example .env.local
-```
-Then edit `.env.local` with your specific configuration values if needed.
-
-4. Run the development server
+3. Run the development server
 ```bash
 npm run dev
 ```
-or with yarn:
-```bash
-yarn dev
-```
 
-5. Open [http://localhost:3000](http://localhost:3000) in your browser
+4. Access the application at [http://localhost:3000](http://localhost:3000)
+
+## Required Dependencies
+
+```bash
+npm install next react react-dom @solana/web3.js bip39 tweetnacl ed25519-hd-key sonner lucide-react
+```
 
 ## Environment Setup
 
-The application uses environment variables for configuration. Create a `.env.local` file in the root directory with the following variables:
-
+Create a `.env.local` file in the project root:
 ```
-# API Keys (example)
-NEXT_PUBLIC_COINGECKO_API_KEY=your_coingecko_api_key_if_you_have_one
+NEXT_PUBLIC_COINGECKO_API_KEY=your_api_key_here
 ```
 
-Note: The application can run without API keys, but certain features may be rate-limited.
+## State Management
 
-## Responsive Design
+- **`mnemonicWords`**: Recovery phrase words
+- **`seed`**: Cryptographic seed derived from mnemonic
+- **`privateKeys`**: Generated private keys for transactions
+- **`publicKeys`**: Public wallet addresses
+- **`showMnemonic`**: Toggle visibility of recovery phrase
+- **`showPrivateKeys`**: Toggle visibility of private keys
 
-NebulaWallet is built with a mobile-first approach, ensuring it works beautifully on all screen sizes.
+## How It Works
 
-## Security
+1. **Wallet Generation**:
+   - Creates a random mnemonic phrase using BIP39
+   - Derives seed and generates ED25519 keypairs
+   - Converts to Solana-compatible format
 
-- All sensitive operations are performed client-side
-- Private keys are never stored or transmitted
-- Optional visibility toggles for sensitive information
-- Environment files with secrets are ignored by git
+2. **Wallet Import**:
+   - Validates and processes user-provided recovery phrases
+   - Derives keys from existing mnemonics
+
+3. **Security**:
+   - All operations performed client-side
+   - No storage of private keys
+   - Masked display options for sensitive data
 
 ## Contributing
 
-Contributions are welcome! Feel free to submit issues or pull requests.
+Contributions welcome. Please submit issues or pull requests via GitHub.
 
 ## License
 
-This project is licensed under the MIT License.
-
-## Author
-
-Designed and developed by [Rishit](https://github.com/rish-it)
+MIT License
