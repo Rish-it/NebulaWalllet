@@ -1,4 +1,4 @@
-# NebulaWallet 🌌
+# NebulaWallet
 
 <div align="center">
   <img src="public/web.png" alt="NebulaWallet Banner" width="100%" />
@@ -6,24 +6,20 @@
   <h3>Your secure gateway to the decentralized web and digital assets</h3>
 </div>
 
-## ✨ Features
+## Features
 
-<div align="center">
-  <img src="public/currency.png" alt="NebulaWallet Currency" width="60%" />
-</div>
+- **Modern & Intuitive Interface** - Beautiful UI designed with the latest design principles
+- **Enhanced Security** - Secure wallet generation and management
+- **Real-time Crypto Tracking** - Live prices, trends, and market data powered by CoinGecko
+- **Multi-currency Support** - Support for major cryptocurrencies
+- **Cross-platform Compatibility** - Works seamlessly across devices
+- **Portfolio Management** - Track your assets and performance with ease
 
-- **📱 Modern & Intuitive Interface** - Beautiful UI designed with the latest design principles
-- **🔒 Enhanced Security** - Secure wallet generation and management
-- **💱 Real-time Crypto Tracking** - Live prices, trends, and market data powered by CoinGecko
-- **🔄 Multi-currency Support** - Support for major cryptocurrencies
-- **🌐 Cross-platform Compatibility** - Works seamlessly across devices
-- **📊 Portfolio Management** - Track your assets and performance with ease
-
-## 🚀 Live Demo
+## Live Demo
 
 Experience NebulaWallet at [nebulawallet.vercel.app](https://nebulawallet.vercel.app)
 
-## 💻 Technology Stack
+## Technology Stack
 
 - **Next.js** - React framework with server-side rendering
 - **TypeScript** - Type-safe JavaScript
@@ -32,7 +28,7 @@ Experience NebulaWallet at [nebulawallet.vercel.app](https://nebulawallet.vercel
 - **Solana Web3.js** - Blockchain integration
 - **CoinGecko API** - Real-time cryptocurrency data
 
-## 🛠️ Getting Started
+## Getting Started
 
 1. Clone the repository
 ```bash
@@ -52,30 +48,24 @@ npm run dev
 
 4. Open [http://localhost:3000](http://localhost:3000) in your browser
 
-## 📱 Responsive Design
+## Responsive Design
 
 NebulaWallet is built with a mobile-first approach, ensuring it works beautifully on all screen sizes.
 
-## 🔐 Security
+## Security
 
 - All sensitive operations are performed client-side
 - Private keys are never stored or transmitted
 - Optional visibility toggles for sensitive information
 
-## 👨‍💻 Development
-
-<div align="center">
-  <video width="80%" src="public/display.mp4" autoplay loop muted></video>
-</div>
-
-## 🤝 Contributing
+## Contributing
 
 Contributions are welcome! Feel free to submit issues or pull requests.
 
-## 📄 License
+## License
 
 This project is licensed under the MIT License.
 
-## 👨‍🚀 Author
+## Author
 
 Designed and developed by [Rishit](https://github.com/rish-it)
