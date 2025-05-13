@@ -159,3 +159,22 @@
 .dark .hover\:bg-purple-700:hover {
   background-color: rgb(124 58 237); /* hover:bg-purple-600 */
 }
+
+@layer utilities {
+  /* Flip card utilities */
+  .perspective-1000 {
+    perspective: 1000px;
+  }
+  
+  .transform-style-preserve-3d {
+    transform-style: preserve-3d;
+  }
+  
+  .backface-hidden {
+    backface-visibility: hidden;
+  }
+  
+  .rotate-y-180 {
+    transform: rotateY(180deg);
+  }
+}

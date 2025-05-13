@@ -154,7 +154,7 @@ export default function CryptoStats() {
     const intervalId = setInterval(fetchCryptoData, 120000);
     
     return () => clearInterval(intervalId);
-  }, []);
+  }, [cryptoData.length, popularCryptoIds]);
   
   function formatNumber(num: number): string {
     if (num >= 1e12) return (num / 1e12).toFixed(1) + 'T';

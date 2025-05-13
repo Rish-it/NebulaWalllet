@@ -147,6 +147,8 @@ export default function DeFiHub() {
   const [showTestDialog, setShowTestDialog] = useState<boolean>(false);
   const [testAmount, setTestAmount] = useState<string>('5');
   const [userStakes, setUserStakes] = useState<{validator: Validator, amount: string, date: Date}[]>([]);
+  const [showHistory, setShowHistory] = useState<boolean>(false);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
   
   // Swap functionality state
   const [showSwapDialog, setShowSwapDialog] = useState<boolean>(false);
@@ -189,7 +191,7 @@ export default function DeFiHub() {
         if (storedTokens) {
           try {
             const parsedTokens = JSON.parse(storedTokens);
-            setTestTokens({...testTokens, ...parsedTokens});
+            setTestTokens(prev => ({...prev, ...parsedTokens}));
           } catch (error) {
             console.error('Error parsing stored tokens:', error);
           }
@@ -211,11 +213,12 @@ export default function DeFiHub() {
   // Update SOL balance in test tokens whenever balance changes
   useEffect(() => {
     if (isTestMode && walletType === 'solana' && isConnected) {
-      setTestTokens(prev => ({...prev, 'SOL': balance}));
-      
-      // Also save to localStorage
-      const updatedTokens = {...testTokens, 'SOL': balance};
-      localStorage.setItem('testTokens', JSON.stringify(updatedTokens));
+      setTestTokens(prev => {
+        const updated = {...prev, 'SOL': balance};
+        // Also save to localStorage
+        localStorage.setItem('testTokens', JSON.stringify(updated));
+        return updated;
+      });
     }
   }, [balance, isTestMode, walletType, isConnected]);
 
@@ -437,13 +440,13 @@ export default function DeFiHub() {
       const amount = parseFloat(stake.amount);
       const stakedDate = stake.date;
       
-      // Calculate days since staking (simplified)
+      // Calculate days since staking
       const daysSinceStaking = Math.max(0, (now.getTime() - stakedDate.getTime()) / (1000 * 60 * 60 * 24));
       
-      // Daily interest rate based on APY (simplified)
+      // Daily interest rate based on APY
       const dailyRate = validator.apy / 365 / 100;
       
-      // Calculate rewards
+      // Calculate rewards (compound interest formula for simplicity)
       const reward = amount * dailyRate * daysSinceStaking;
       totalRewards += reward;
     });
@@ -616,6 +619,76 @@ export default function DeFiHub() {
     }
   };
 
+  // Add dummy staking data for demonstration
+  const addDummyStake = () => {
+    if (!validators.length) return;
+    
+    // Select a random validator
+    const randomValidator = validators[Math.floor(Math.random() * validators.length)];
+    
+    // Generate a random amount between 1 and 5 SOL
+    const randomAmount = (1 + Math.random() * 4).toFixed(2);
+    
+    // Create a past date (between 1-30 days ago)
+    const daysAgo = Math.floor(Math.random() * 30) + 1;
+    const pastDate = new Date();
+    pastDate.setDate(pastDate.getDate() - daysAgo);
+    
+    // Create the new stake
+    const newStake = {
+      validator: randomValidator,
+      amount: randomAmount,
+      date: pastDate
+    };
+    
+    // Add it to the stakes
+    const updatedStakes = [...userStakes, newStake];
+    setUserStakes(updatedStakes);
+    
+    // Save to localStorage
+    localStorage.setItem('testSolStakes', JSON.stringify(updatedStakes));
+    
+    // Set success message
+    setSuccessMessage(`Added ${randomAmount} SOL staked ${daysAgo} days ago with ${randomValidator.name}`);
+    
+    // Clear message after 3 seconds
+    setTimeout(() => {
+      setSuccessMessage(null);
+    }, 3000);
+  };
+
+  // Create initial dummy stakes if none exist and validators are loaded
+  useEffect(() => {
+    if (isTestMode && walletType === 'solana' && validators.length > 0 && userStakes.length === 0) {
+      // Create 1-3 initial stakes for demonstration
+      const numStakes = Math.floor(Math.random() * 3) + 1;
+      const newStakes = [];
+      
+      for (let i = 0; i < numStakes; i++) {
+        // Select a random validator
+        const randomValidator = validators[Math.floor(Math.random() * validators.length)];
+        
+        // Generate a random amount between 1 and 5 SOL
+        const randomAmount = (1 + Math.random() * 4).toFixed(2);
+        
+        // Create a past date (between 5-60 days ago)
+        const daysAgo = Math.floor(Math.random() * 55) + 5;
+        const pastDate = new Date();
+        pastDate.setDate(pastDate.getDate() - daysAgo);
+        
+        // Create the new stake
+        newStakes.push({
+          validator: randomValidator,
+          amount: randomAmount,
+          date: pastDate
+        });
+      }
+      
+      setUserStakes(newStakes);
+      localStorage.setItem('testSolStakes', JSON.stringify(newStakes));
+    }
+  }, [isTestMode, walletType, validators, userStakes.length]);
+
   return (
     <div id="defi" className="py-16">
       <div className="text-center mb-12">
@@ -705,52 +778,115 @@ export default function DeFiHub() {
             
             {/* Test Mode Portfolio Stats */}
             {isTestMode && walletType === 'solana' && (
-              <div className="mt-4 grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div className="bg-white p-4 rounded-xl border border-purple-100 dark:bg-gray-900 dark:border-gray-700">
-                  <div className="text-sm text-slate-500 dark:text-gray-400">Total Staked</div>
-                  <div className="font-bold text-slate-800 dark:text-gray-100">
-                    {calculateTotalStaked()} SOL
-                  </div>
-                </div>
-                <div className="bg-white p-4 rounded-xl border border-purple-100 dark:bg-gray-900 dark:border-gray-700">
-                  <div className="text-sm text-slate-500 dark:text-gray-400">Est. Rewards</div>
-                  <div className="font-bold text-green-600 dark:text-green-400">
-                    {calculateEstimatedRewards()} SOL
-                  </div>
-                </div>
-                <div className="bg-white p-4 rounded-xl border border-purple-100 dark:bg-gray-900 dark:border-gray-700">
-                  <div className="text-sm text-slate-500 dark:text-gray-400">Active Stakes</div>
-                  <div className="font-bold text-slate-800 dark:text-gray-100">
-                    {userStakes.length}
-                  </div>
-                </div>
-              </div>
-            )}
-            
-            {/* Test Mode Staking History */}
-            {isTestMode && walletType === 'solana' && userStakes.length > 0 && (
               <div className="mt-4">
-                <h4 className="font-semibold text-slate-800 mb-2 dark:text-gray-100">Your Active Stakes</h4>
-                <div className="bg-white rounded-xl border border-purple-100 divide-y divide-purple-100 dark:bg-gray-900 dark:border-gray-700 dark:divide-gray-700">
-                  {userStakes.map((stake, index) => (
-                    <div key={index} className="p-3 flex justify-between items-center">
-                      <div className="flex items-center gap-3">
-                        <div className="bg-purple-100 rounded-full w-10 h-10 flex items-center justify-center dark:bg-gray-800">
-                          <CoinsIcon className="h-5 w-5 text-purple-600 dark:text-purple-400" />
-                        </div>
-                        <div>
-                          <div className="font-medium text-slate-800 dark:text-gray-100">{stake.validator.name}</div>
-                          <div className="text-xs text-slate-500 dark:text-gray-400">
-                            Staked on {stake.date.toLocaleDateString()}
+                <div className="flex justify-between items-center mb-4">
+                  <h4 className="font-semibold text-slate-800 dark:text-gray-100">Portfolio Stats</h4>
+                  <div className="flex gap-2">
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      className="rounded-full border-purple-200 text-purple-600 dark:border-gray-700 dark:text-purple-400"
+                      onClick={addDummyStake}
+                    >
+                      <Plus size={14} className="mr-1" />
+                      Add Dummy Stake
+                    </Button>
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      className="rounded-full border-purple-200 text-purple-600 dark:border-gray-700 dark:text-purple-400"
+                      onClick={() => setShowHistory(prev => !prev)}
+                    >
+                      {showHistory ? "Show Stats" : "Show History"}
+                    </Button>
+                  </div>
+                </div>
+
+                <div className="relative perspective-1000 w-full h-[200px]">
+                  {successMessage && (
+                    <div className="absolute top-0 left-0 right-0 p-2 bg-green-100 text-green-800 rounded-lg z-10 text-center dark:bg-green-900 dark:text-green-300">
+                      {successMessage}
+                    </div>
+                  )}
+                  <div className={`absolute w-full h-full transition-all duration-500 transform-style-preserve-3d ${showHistory ? 'rotate-y-180' : ''}`}>
+                    {/* Front side - Stats */}
+                    <div className={`absolute w-full h-full backface-hidden ${showHistory ? 'hidden md:block opacity-0' : 'opacity-100'}`}>
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div className="bg-white p-4 rounded-xl border border-purple-100 dark:bg-gray-900 dark:border-gray-700">
+                          <div className="text-sm text-slate-500 dark:text-gray-400">Total Staked</div>
+                          <div className="font-bold text-slate-800 dark:text-gray-100">
+                            {calculateTotalStaked()} SOL
                           </div>
+                          {parseFloat(calculateTotalStaked()) > 0 && (
+                            <div className="text-xs text-purple-600 mt-1 dark:text-purple-400">
+                              ${(parseFloat(calculateTotalStaked()) * 138.25).toFixed(2)} USD
+                            </div>
+                          )}
                         </div>
-                      </div>
-                      <div className="text-right">
-                        <div className="font-medium text-slate-800 dark:text-gray-100">{stake.amount} SOL</div>
-                        <div className="text-xs text-green-600 dark:text-green-400">{stake.validator.apy}% APY</div>
+                        <div className="bg-white p-4 rounded-xl border border-purple-100 dark:bg-gray-900 dark:border-gray-700">
+                          <div className="text-sm text-slate-500 dark:text-gray-400">Est. Rewards</div>
+                          <div className="font-bold text-green-600 dark:text-green-400">
+                            {calculateEstimatedRewards()} SOL
+                          </div>
+                          {parseFloat(calculateEstimatedRewards()) > 0 && (
+                            <div className="text-xs text-purple-600 mt-1 dark:text-purple-400">
+                              ${(parseFloat(calculateEstimatedRewards()) * 138.25).toFixed(2)} USD
+                            </div>
+                          )}
+                        </div>
+                        <div className="bg-white p-4 rounded-xl border border-purple-100 dark:bg-gray-900 dark:border-gray-700">
+                          <div className="text-sm text-slate-500 dark:text-gray-400">Active Stakes</div>
+                          <div className="font-bold text-slate-800 dark:text-gray-100">
+                            {userStakes.length}
+                          </div>
+                          {userStakes.length === 0 && (
+                            <div className="text-xs text-slate-500 mt-1 dark:text-gray-400">
+                              No active stakes yet
+                            </div>
+                          )}
+                        </div>
                       </div>
                     </div>
-                  ))}
+
+                    {/* Back side - History */}
+                    <div className={`absolute w-full h-full backface-hidden rotate-y-180 ${showHistory ? 'opacity-100' : 'hidden md:block opacity-0'}`}>
+                      <div className="bg-white rounded-xl border border-purple-100 overflow-hidden dark:bg-gray-900 dark:border-gray-700">
+                        {userStakes.length > 0 ? (
+                          <div className="max-h-[200px] overflow-y-auto">
+                            {userStakes.map((stake, index) => (
+                              <div key={index} className="p-3 flex justify-between items-center border-b last:border-b-0 border-purple-100 dark:border-gray-700">
+                                <div className="flex items-center gap-3">
+                                  <div className="bg-purple-100 rounded-full w-10 h-10 flex items-center justify-center dark:bg-gray-800">
+                                    <CoinsIcon className="h-5 w-5 text-purple-600 dark:text-purple-400" />
+                                  </div>
+                                  <div>
+                                    <div className="font-medium text-slate-800 dark:text-gray-100">{stake.validator.name}</div>
+                                    <div className="text-xs text-slate-500 dark:text-gray-400">
+                                      {stake.date.toLocaleDateString()}
+                                    </div>
+                                  </div>
+                                </div>
+                                <div className="text-right">
+                                  <div className="font-medium text-slate-800 dark:text-gray-100">{stake.amount} SOL</div>
+                                  <div className="text-xs text-green-600 dark:text-green-400">{stake.validator.apy}% APY</div>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        ) : (
+                          <div className="p-6 text-center">
+                            <div className="bg-purple-50 rounded-full w-12 h-12 flex items-center justify-center mx-auto mb-3 dark:bg-gray-800">
+                              <CoinsIcon className="h-6 w-6 text-purple-600 dark:text-purple-400" />
+                            </div>
+                            <p className="text-slate-800 font-medium dark:text-gray-100">No Staking History</p>
+                            <p className="text-slate-500 text-sm mt-1 dark:text-gray-400">
+                              When you stake SOL, your history will appear here
+                            </p>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </div>
             )}
