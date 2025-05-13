@@ -5,6 +5,7 @@ import WalletHero from "@/components/WalletHero";
 import WalletFeatures from "@/components/WalletFeatures";
 import ResourcesCards from "@/components/ResourcesCards";
 import CryptoStats from "@/components/CryptoStats";
+import DeFiHub from "@/components/DeFiHub";
 import Footer from "@/components/Footer";
 
 export default function Home() {
@@ -51,6 +52,7 @@ export default function Home() {
           
           <WalletFeatures />
           <CryptoStats />
+          <DeFiHub />
           <ResourcesCards />
         </div>
       </main>

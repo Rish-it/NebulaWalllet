@@ -14,6 +14,9 @@ interface WalletContextType {
   connectWallet: () => Promise<void>
   disconnectWallet: () => void
   setWalletType: (type: 'ethereum' | 'solana') => void
+  isTestMode: boolean
+  toggleTestMode: () => void
+  addTestSol: (amount: string) => void
 }
 
 const defaultContext: WalletContextType = {
@@ -25,7 +28,10 @@ const defaultContext: WalletContextType = {
   walletType: null,
   connectWallet: async () => {},
   disconnectWallet: () => {},
-  setWalletType: () => {}
+  setWalletType: () => {},
+  isTestMode: false,
+  toggleTestMode: () => {},
+  addTestSol: () => {}
 }
 
 const WalletContext = createContext<WalletContextType>(defaultContext)
@@ -43,6 +49,7 @@ export const WalletProvider = ({ children }: WalletProviderProps) => {
   const [isConnected, setIsConnected] = useState<boolean>(false)
   const [isConnecting, setIsConnecting] = useState<boolean>(false)
   const [walletType, setWalletType] = useState<'ethereum' | 'solana' | null>(null)
+  const [isTestMode, setIsTestMode] = useState<boolean>(false)
 
   const hasWindow = typeof window !== 'undefined'
   const hasEthereum = hasWindow && (window as any).ethereum
@@ -52,6 +59,10 @@ export const WalletProvider = ({ children }: WalletProviderProps) => {
     if (storedWalletType === 'ethereum' || storedWalletType === 'solana') {
       setWalletType(storedWalletType)
     }
+    
+    // Check if test mode was enabled previously
+    const testMode = localStorage.getItem('testMode') === 'true'
+    setIsTestMode(testMode)
   }, [])
 
   const updateBalance = async (address: string) => {
@@ -66,12 +77,18 @@ export const WalletProvider = ({ children }: WalletProviderProps) => {
         setBalance(formattedBalance)
       } 
       else if (walletType === 'solana') {
-        const connection = new Connection(clusterApiUrl('mainnet-beta'))
-        const publicKey = new PublicKey(address)
-        const balance = await connection.getBalance(publicKey)
-        const solBalance = balance / 1000000000
-        const formattedBalance = solBalance.toFixed(4)
-        setBalance(formattedBalance)
+        if (isTestMode) {
+          // Use stored test balance in test mode
+          const testBalance = localStorage.getItem('testSolBalance') || '0'
+          setBalance(testBalance)
+        } else {
+          const connection = new Connection(clusterApiUrl('mainnet-beta'))
+          const publicKey = new PublicKey(address)
+          const balance = await connection.getBalance(publicKey)
+          const solBalance = balance / 1000000000
+          const formattedBalance = solBalance.toFixed(4)
+          setBalance(formattedBalance)
+        }
       }
     } catch (error) {
       console.error('Error getting balance:', error)
@@ -115,12 +132,22 @@ export const WalletProvider = ({ children }: WalletProviderProps) => {
       
       try {
         const demoSolanaAddress = localStorage.getItem('solanaWalletAddress') || 
-                                  '8dv5SCnGYbmMR81v8UxqtjKLZ5TPZzxVzpHcdJK2YzEM'
+                                '8dv5SCnGYbmMR81v8UxqtjKLZ5TPZzxVzpHcdJK2YzEM'
         
         setAccount(demoSolanaAddress)
         setIsConnected(true)
         
-        await updateBalance(demoSolanaAddress)
+        // If test mode is enabled, use the stored test balance
+        if (isTestMode) {
+          // Initialize test balance if not already set
+          if (!localStorage.getItem('testSolBalance')) {
+            localStorage.setItem('testSolBalance', '10.0000')
+          }
+          const testBalance = localStorage.getItem('testSolBalance') || '10.0000'
+          setBalance(testBalance)
+        } else {
+          await updateBalance(demoSolanaAddress)
+        }
         
         localStorage.setItem('walletConnected', 'true')
         localStorage.setItem('walletAddress', demoSolanaAddress)
@@ -231,12 +258,19 @@ export const WalletProvider = ({ children }: WalletProviderProps) => {
       if (wasConnected && storedSolanaAddress) {
         setAccount(storedSolanaAddress)
         setIsConnected(true)
-        await updateBalance(storedSolanaAddress)
+        
+        if (isTestMode) {
+          // Use stored test balance
+          const testBalance = localStorage.getItem('testSolBalance') || '0'
+          setBalance(testBalance)
+        } else {
+          await updateBalance(storedSolanaAddress)
+        }
       }
     }
     
     checkSolanaConnection()
-  }, [walletType])
+  }, [walletType, isTestMode])
 
   useEffect(() => {
     if (!account || !isConnected) return
@@ -250,6 +284,37 @@ export const WalletProvider = ({ children }: WalletProviderProps) => {
     return () => clearInterval(intervalId)
   }, [account, chainId, isConnected, walletType])
 
+  const toggleTestMode = () => {
+    const newTestMode = !isTestMode
+    setIsTestMode(newTestMode)
+    localStorage.setItem('testMode', newTestMode.toString())
+    
+    // If toggling to test mode, set a default balance
+    if (newTestMode && walletType === 'solana') {
+      if (!localStorage.getItem('testSolBalance')) {
+        localStorage.setItem('testSolBalance', '10.0000')
+      }
+      const testBalance = localStorage.getItem('testSolBalance') || '10.0000'
+      setBalance(testBalance)
+    } else if (account) {
+      // If disabling test mode, update with real balance
+      updateBalance(account)
+    }
+  }
+
+  const addTestSol = (amount: string) => {
+    if (!isTestMode || walletType !== 'solana') return
+    
+    const currentBalance = parseFloat(balance || '0')
+    const amountToAdd = parseFloat(amount)
+    
+    if (!isNaN(amountToAdd) && amountToAdd > 0) {
+      const newBalance = (currentBalance + amountToAdd).toFixed(4)
+      setBalance(newBalance)
+      localStorage.setItem('testSolBalance', newBalance)
+    }
+  }
+
   return (
     <WalletContext.Provider
       value={{
@@ -261,7 +326,10 @@ export const WalletProvider = ({ children }: WalletProviderProps) => {
         walletType,
         connectWallet,
         disconnectWallet,
-        setWalletType: handleSetWalletType
+        setWalletType: handleSetWalletType,
+        isTestMode,
+        toggleTestMode,
+        addTestSol
       }}
     >
       {children}

@@ -1,6 +1,6 @@
 "use client";
 
-import { ArrowRightLeft, CreditCard, DollarSign, Lightbulb, Lock, ShieldCheck, Construction, ExternalLink } from "lucide-react";
+import { ArrowRightLeft, CreditCard, DollarSign, Lightbulb, Lock, ShieldCheck, Construction, ExternalLink, Layers } from "lucide-react";
 import { Button } from "./ui/button";
 import Link from "next/link";
 
@@ -111,6 +111,13 @@ export default function WalletFeatures() {
       description: "Exchange one cryptocurrency for another with competitive rates.",
       icon: <ArrowRightLeft className="h-7 w-7 text-purple-600 dark:text-purple-400" />,
       link: "#wallet",
+      inDev: true,
+    },
+    {
+      title: "DeFi Earnings",
+      description: "Stake crypto and access yield farming opportunities to earn passive income.",
+      icon: <Layers className="h-7 w-7 text-purple-600 dark:text-purple-400" />,
+      link: "#defi",
       inDev: true,
     },
     {

@@ -31,7 +31,7 @@ const Navbar = () => {
               <span className="tracking-tight text-2xl font-bold text-slate-800 flex items-center dark:text-gray-100">
                 Nebula
                 <span className="ml-2 rounded-full text-xs bg-purple-100 text-purple-700 border border-purple-200 px-2 py-0.5 dark:bg-gray-800 dark:border-gray-700">
-                  v2.0
+                  v1.0
                 </span>
               </span>
             </Link>
@@ -44,11 +44,14 @@ const Navbar = () => {
             <Link href="#wallet" className="text-slate-600 hover:text-purple-600 transition-colors dark:text-gray-300 dark:hover:text-purple-400">
               Wallet
             </Link>
-            <Link href="#resources" className="text-slate-600 hover:text-purple-600 transition-colors dark:text-gray-300 dark:hover:text-purple-400">
-              Resources
+            <Link href="#defi" className="text-slate-600 hover:text-purple-600 transition-colors dark:text-gray-300 dark:hover:text-purple-400">
+              DeFi
             </Link>
             <Link href="#market" className="text-slate-600 hover:text-purple-600 transition-colors dark:text-gray-300 dark:hover:text-purple-400">
               Market
+            </Link>
+            <Link href="#resources" className="text-slate-600 hover:text-purple-600 transition-colors dark:text-gray-300 dark:hover:text-purple-400">
+              Resources
             </Link>
           </div>
           
