@@ -1,0 +1,161 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 240 10% 3.9%;
+    --card: 0 0% 100%;
+    --card-foreground: 240 10% 3.9%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 240 10% 3.9%;
+    --primary: 240 5.9% 10%;
+    --primary-foreground: 0 0% 98%;
+    --secondary: 240 4.8% 95.9%;
+    --secondary-foreground: 240 5.9% 10%;
+    --muted: 240 4.8% 95.9%;
+    --muted-foreground: 240 3.8% 46.1%;
+    --accent: 240 4.8% 95.9%;
+    --accent-foreground: 240 5.9% 10%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 240 5.9% 90%;
+    --input: 240 5.9% 90%;
+    --ring: 240 10% 3.9%;
+    --radius: 0.5rem;
+    
+    /* Custom Nebula Colors */
+    --nebula-purple: 265 83% 45%;
+    --nebula-purple-dark: 265 83% 40%;
+    --nebula-purple-light: 265 83% 95%;
+    --nebula-purple-muted: 265 30% 95%;
+    --nebula-slate: 215 25% 27%;
+    --nebula-slate-light: 215 25% 97%;
+    
+    /* Chart Colors */
+    --chart-1: 265 83% 45%;
+    --chart-2: 230 70% 50%;
+    --chart-3: 197 37% 24%;
+    --chart-4: 336 74% 66%;
+    --chart-5: 27 87% 67%;
+  }
+
+  .dark {
+    --background: 240 10% 7%;
+    --foreground: 0 0% 93%;
+    --card: 240 10% 11%;
+    --card-foreground: 0 0% 98%;
+    --popover: 240 10% 9%;
+    --popover-foreground: 0 0% 98%;
+    --primary: 0 0% 98%;
+    --primary-foreground: 240 5.9% 10%;
+    --secondary: 240 3.7% 15.9%;
+    --secondary-foreground: 0 0% 98%;
+    --muted: 240 3.7% 15.9%;
+    --muted-foreground: 240 5% 64.9%;
+    --accent: 240 3.7% 15.9%;
+    --accent-foreground: 0 0% 98%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 240 3.7% 15.9%;
+    --input: 240 3.7% 15.9%;
+    --ring: 240 4.9% 83.9%;
+    
+    /* Custom Nebula Colors */
+    --nebula-purple: 265 83% 65%;
+    --nebula-purple-dark: 265 83% 60%;
+    --nebula-purple-light: 265 20% 18%;
+    --nebula-purple-muted: 265 15% 20%;
+    --nebula-slate: 215 25% 90%;
+    --nebula-slate-light: 215 15% 20%;
+    
+    /* Chart Colors - Brighter in dark mode */
+    --chart-1: 265 90% 65%;
+    --chart-2: 230 80% 60%;
+    --chart-3: 197 60% 55%;
+    --chart-4: 336 80% 65%;
+    --chart-5: 27 90% 70%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+}
+
+/* Dark mode enhancements */
+.dark .bg-white,
+.dark .bg-slate-50,
+.dark .bg-purple-50 {
+  background-color: rgb(17 24 39); /* bg-gray-900 */
+}
+
+.dark .border-purple-100,
+.dark .border-purple-200,
+.dark .border-slate-200 {
+  border-color: rgb(31 41 55); /* border-gray-800 */
+}
+
+.dark .text-slate-800,
+.dark .text-slate-900 {
+  color: rgb(243 244 246); /* text-gray-100 */
+}
+
+.dark .text-slate-600,
+.dark .text-slate-700 {
+  color: rgb(209 213 219); /* text-gray-300 */
+}
+
+.dark .text-slate-500 {
+  color: rgb(156 163 175); /* text-gray-400 */
+}
+
+.dark .from-white {
+  --tw-gradient-from: rgb(17 24 39) var(--tw-gradient-from-position); /* from-gray-900 */
+  --tw-gradient-to: rgb(17 24 39 / 0) var(--tw-gradient-to-position);
+  --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to);
+}
+
+.dark .to-purple-50 {
+  --tw-gradient-to: rgb(31 41 55) var(--tw-gradient-to-position); /* to-gray-800 */
+}
+
+.dark .from-slate-50 {
+  --tw-gradient-from: rgb(17 24 39) var(--tw-gradient-from-position); /* from-gray-900 */
+  --tw-gradient-to: rgb(17 24 39 / 0) var(--tw-gradient-to-position);
+  --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to);
+}
+
+/* Fixed hover states - no circular dependencies */
+.dark .hover\:bg-purple-50:hover {
+  background-color: rgb(31 41 55); /* hover:bg-gray-800 */
+}
+
+.dark .hover\:bg-slate-50:hover {
+  background-color: rgb(31 41 55); /* hover:bg-gray-800 */
+}
+
+.dark .hover\:text-purple-600:hover {
+  color: rgb(167 139 250); /* hover:text-purple-400 */
+}
+
+.dark .text-purple-600 {
+  color: rgb(167 139 250); /* text-purple-400 */
+}
+
+.dark .text-purple-700 {
+  color: rgb(167 139 250); /* text-purple-400 */
+}
+
+.dark .bg-purple-600 {
+  background-color: rgb(139 92 246); /* bg-purple-500 */
+}
+
+.dark .hover\:bg-purple-700:hover {
+  background-color: rgb(124 58 237); /* hover:bg-purple-600 */
+}
