@@ -73,10 +73,4 @@ NEXT_PUBLIC_COINGECKO_API_KEY=your_api_key_here
    - No storage of private keys
    - Masked display options for sensitive data
 
-## Contributing
 
-Contributions welcome. Please submit issues or pull requests via GitHub.
-
-## License
-
-MIT License
