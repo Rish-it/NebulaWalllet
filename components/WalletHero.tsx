@@ -4,24 +4,63 @@ import { Button } from "./ui/button";
 import { ArrowRightLeft, Send, ArrowDownToLine } from "lucide-react";
 import { useWallet } from "@/context/WalletContext";
 import Link from "next/link";
+import { useEffect, useState } from "react";
 
 export default function WalletHero() {
-  const { account, balance, isConnected, connectWallet } = useWallet();
+  const { account, balance, isConnected, connectWallet, walletType } = useWallet();
+  const [cryptoPrices, setCryptoPrices] = useState({
+    ethereum: 1850,
+    solana: 142
+  });
   
-  // Calculate USD value (this would normally come from an API)
-  const ethPrice = 1850; // Example price in USD
+  useEffect(() => {
+    const fetchPrices = async () => {
+      try {
+        const response = await fetch(
+          "https://api.coingecko.com/api/v3/simple/price?ids=ethereum,solana&vs_currencies=usd"
+        );
+        
+        if (response.ok) {
+          const data = await response.json();
+          setCryptoPrices({
+            ethereum: data.ethereum?.usd || 1850,
+            solana: data.solana?.usd || 142
+          });
+        }
+      } catch (error) {
+        console.error("Error fetching prices:", error);
+      }
+    };
+    
+    fetchPrices();
+  }, []);
+  
+  const getCurrencyPrice = () => {
+    if (walletType === 'ethereum') return cryptoPrices.ethereum;
+    if (walletType === 'solana') return cryptoPrices.solana;
+    return cryptoPrices.ethereum;
+  };
+  
+  const currencyPrice = getCurrencyPrice();
+  
   const usdValue = isConnected 
-    ? (parseFloat(balance) * ethPrice).toFixed(2) 
-    : "2,649.57"; // Show default if not connected
+    ? (parseFloat(balance) * currencyPrice).toFixed(2) 
+    : "2,649.57";
   
-  // Format wallet address if connected
+  const getCurrencySymbol = () => {
+    if (walletType === 'ethereum') return 'ETH';
+    if (walletType === 'solana') return 'SOL';
+    return 'ETH';
+  };
+  
+  const currencySymbol = getCurrencySymbol();
+  
   const displayAddress = account 
     ? `${account.substring(0, 6)}...${account.substring(account.length - 4)}`
     : "";
 
   return (
     <div className="relative overflow-hidden bg-gradient-to-br from-slate-50 to-purple-50 py-12 md:py-20 dark:from-gray-900 dark:to-gray-800">
-      {/* Background decorative elements */}
       <div className="absolute -top-24 -right-24 w-96 h-96 bg-purple-100 rounded-full opacity-30 blur-3xl dark:bg-purple-900 dark:opacity-10"></div>
       <div className="absolute -bottom-24 -left-24 w-96 h-96 bg-purple-200 rounded-full opacity-30 blur-3xl dark:bg-purple-900 dark:opacity-10"></div>
       
@@ -67,10 +106,10 @@ export default function WalletHero() {
                       {isConnected ? 'Connected' : 'Disconnected'}
                     </div>
                   </div>
-                  <div className="p-4 bg-purple-50 rounded-2xl mb-4 dark:bg-gray-800">
+                  <div className="p-5 bg-purple-50 rounded-2xl mb-4 dark:bg-gray-800">
                     <div className="text-sm text-slate-500 mb-1 dark:text-gray-400">Total Balance</div>
                     <div className="text-2xl font-bold text-slate-800 dark:text-gray-100">
-                      {isConnected ? `${balance} ETH` : '1.43 ETH'}
+                      {isConnected ? `${balance} ${currencySymbol}` : `1.43 ${currencySymbol}`}
                     </div>
                     <div className="text-sm text-purple-600 dark:text-purple-400">≈ ${usdValue} USD</div>
                   </div>

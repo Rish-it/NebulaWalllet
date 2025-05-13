@@ -11,6 +11,7 @@ import { Input } from "./ui/input";
 import { motion } from "framer-motion";
 import bs58 from "bs58";
 import { ethers } from "ethers";
+import { useWallet } from "@/context/WalletContext";
 import {
   ChevronDown,
   ChevronUp,
@@ -42,6 +43,7 @@ interface Wallet {
 }
 
 const WalletGenerator = () => {
+  const { walletType, setWalletType } = useWallet();
   const [mnemonicWords, setMnemonicWords] = useState<string[]>(
     Array(12).fill(" ")
   );
@@ -58,6 +60,15 @@ const WalletGenerator = () => {
   };
 
   const pathTypeName = pathTypeNames[pathTypes[0]] || "";
+
+  // Sync with WalletContext wallet type
+  useEffect(() => {
+    if (walletType === 'ethereum' && (!pathTypes.length || pathTypes[0] !== '60')) {
+      setPathTypes(['60']);
+    } else if (walletType === 'solana' && (!pathTypes.length || pathTypes[0] !== '501')) {
+      setPathTypes(['501']);
+    }
+  }, [walletType, pathTypes]);
 
   useEffect(() => {
     const storedWallets = localStorage.getItem("wallets");
@@ -213,6 +224,21 @@ const WalletGenerator = () => {
       toast.success("Wallet generated successfully!");
     }
   };
+
+  // Function to handle blockchain selection and sync with WalletContext
+  const handleBlockchainSelect = (pathType: string) => {
+    setPathTypes([pathType]);
+    
+    // Update WalletContext type
+    if (pathType === '501') {
+      setWalletType('solana');
+    } else if (pathType === '60') {
+      setWalletType('ethereum');
+    }
+    
+    toast.success("Wallet selected. Please generate a wallet to continue.");
+  };
+
   return (
     <div className="flex flex-col gap-3">
       {wallets.length === 0 && (
@@ -249,13 +275,8 @@ const WalletGenerator = () => {
                 <div className="flex gap-2">
                   <Button
                     size="sm"
-                    onClick={() => {
-                      setPathTypes(["501"]);
-                      toast.success(
-                        "Wallet selected. Please generate a wallet to continue."
-                      );
-                    }}
-                    className="rounded-full mt-2 hover:bg-[#cccccc]"
+                    onClick={() => handleBlockchainSelect("501")}
+                    className={`rounded-full mt-2 hover:bg-[#cccccc] ${walletType === 'solana' ? 'bg-purple-100 text-purple-700' : ''}`}
                   > <div className="flex items-center space-x-4 z-10">
                 <img 
                 src="https://cdn-icons-png.flaticon.com/128/14446/14446238.png" 
@@ -267,13 +288,8 @@ const WalletGenerator = () => {
                   </Button>
                   <Button
                     size="sm"
-                    onClick={() => {
-                      setPathTypes(["60"]);
-                      toast.success(
-                        "Wallet selected. Please generate a wallet to continue."
-                      );
-                    }}
-                    className="rounded-full mt-2 hover:bg-[#cccccc]"
+                    onClick={() => handleBlockchainSelect("60")}
+                    className={`rounded-full mt-2 hover:bg-[#cccccc] ${walletType === 'ethereum' ? 'bg-purple-100 text-purple-700' : ''}`}
                   >
                     <div className="flex items-center space-x-4 z-10">
                     <FaEthereum className="text-xl mr-2"/> 

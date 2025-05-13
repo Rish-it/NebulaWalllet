@@ -6,6 +6,7 @@ import { ModeToggle } from "./ui/theme-button";
 import { Button } from "./ui/button";
 import { useWallet } from "@/context/WalletContext";
 import { useEffect, useState } from "react";
+import WalletTypeSelector from "./WalletTypeSelector";
 
 const Navbar = () => {
   const { connectWallet, disconnectWallet, isConnected, account, isConnecting } = useWallet();
@@ -52,6 +53,9 @@ const Navbar = () => {
           </div>
           
           <div className="flex items-center gap-4">
+            <div className="hidden md:block">
+              <WalletTypeSelector />
+            </div>
             {isConnected ? (
               <Button 
                 variant="outline"

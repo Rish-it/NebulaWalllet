@@ -18,41 +18,7 @@ interface CryptoData {
 type PriceDisplay = "usd" | "usdc" | "usdt";
 
 export default function CryptoStats() {
-  const [cryptoData, setCryptoData] = useState<CryptoData[]>([
-    {
-      name: "Ethereum",
-      symbol: "ETH",
-      price: 1852.73,
-      change: +2.34,
-      volume: "17.8B",
-      marketCap: "223.4B",
-    },
-    {
-      name: "Bitcoin",
-      symbol: "BTC",
-      price: 28456.12,
-      change: +1.21,
-      volume: "23.6B",
-      marketCap: "554.9B",
-    },
-    {
-      name: "Solana",
-      symbol: "SOL",
-      price: 142.67,
-      change: +3.51,
-      volume: "6.9B",
-      marketCap: "58.3B",
-    },
-    {
-      name: "USD Coin",
-      symbol: "USDC",
-      price: 1.00,
-      change: +0.01,
-      volume: "5.2B",
-      marketCap: "31.6B",
-    },
-  ]);
-  
+  const [cryptoData, setCryptoData] = useState<CryptoData[]>([]);
   const [loading, setLoading] = useState(true);
   const [lastUpdated, setLastUpdated] = useState<string>(new Date().toLocaleTimeString());
   const [error, setError] = useState<string | null>(null);
@@ -67,7 +33,6 @@ export default function CryptoStats() {
     "polkadot"
   ];
 
-  // Suppress hydration warnings by using the useEffect trick
   const [isClient, setIsClient] = useState(false);
   
   useEffect(() => {
@@ -119,6 +84,66 @@ export default function CryptoStats() {
       } catch (err) {
         console.error("Error fetching crypto data:", err);
         setError("Failed to load real-time data. Using cached data.");
+        
+        if (cryptoData.length === 0) {
+          const fallbackData = [
+            {
+              name: "Bitcoin",
+              symbol: "BTC",
+              price: 28456.12,
+              change: +1.21,
+              volume: "23.6B",
+              marketCap: "554.9B",
+              image: "https://assets.coingecko.com/coins/images/1/large/bitcoin.png"
+            },
+            {
+              name: "Ethereum",
+              symbol: "ETH",
+              price: 1852.73,
+              change: +2.34,
+              volume: "17.8B",
+              marketCap: "223.4B",
+              image: "https://assets.coingecko.com/coins/images/279/large/ethereum.png"
+            },
+            {
+              name: "Solana",
+              symbol: "SOL",
+              price: 142.67,
+              change: +3.51,
+              volume: "6.9B",
+              marketCap: "58.3B",
+              image: "https://assets.coingecko.com/coins/images/4128/large/solana.png"
+            },
+            {
+              name: "Dogecoin",
+              symbol: "DOGE",
+              price: 0.138,
+              change: -1.2,
+              volume: "2.1B",
+              marketCap: "18.7B",
+              image: "https://assets.coingecko.com/coins/images/5/large/dogecoin.png"
+            },
+            {
+              name: "Cardano",
+              symbol: "ADA",
+              price: 0.45,
+              change: +0.8,
+              volume: "1.2B",
+              marketCap: "16.1B",
+              image: "https://assets.coingecko.com/coins/images/975/large/cardano.png"
+            },
+            {
+              name: "Polkadot",
+              symbol: "DOT",
+              price: 6.87,
+              change: -0.5,
+              volume: "0.9B",
+              marketCap: "9.2B",
+              image: "https://assets.coingecko.com/coins/images/12171/large/polkadot.png"
+            }
+          ];
+          setCryptoData(fallbackData);
+        }
       } finally {
         setLoading(false);
       }

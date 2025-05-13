@@ -17,11 +17,24 @@ export default function Iphone15Pro({
   videoSrc,
   ...props
 }: Iphone15ProProps) {
-  const { account, balance, isConnected } = useWallet();
+  const { account, balance, isConnected, walletType } = useWallet();
   
-  // Get real-time ETH price from CoinGecko API
-  const ethPrice = 1850;
-  const usdValue = isConnected ? (parseFloat(balance) * ethPrice).toFixed(2) : "0.00";
+  const getCurrencyPrice = () => {
+    if (walletType === 'ethereum') return 1850;
+    if (walletType === 'solana') return 142;
+    return 0;
+  };
+  
+  const currencyPrice = getCurrencyPrice();
+  const usdValue = isConnected ? (parseFloat(balance) * currencyPrice).toFixed(2) : "0.00";
+  
+  const getCurrencySymbol = () => {
+    if (walletType === 'ethereum') return 'ETH';
+    if (walletType === 'solana') return 'SOL';
+    return '';
+  };
+  
+  const currencySymbol = getCurrencySymbol();
   
   const displayAddress = account 
     ? `${account.substring(0, 6)}...${account.substring(account.length - 4)}`
@@ -74,7 +87,7 @@ export default function Iphone15Pro({
             />
             <div className="absolute inset-x-0 bottom-0 p-6">
               <div 
-                className="bg-white rounded-3xl p-4 border border-purple-200 shadow-sm dark:bg-gray-800 dark:border-gray-700 mx-auto max-w-[90%]"
+                className="bg-white rounded-3xl p-4 border border-purple-200 shadow-sm dark:bg-gray-800 dark:border-gray-700 mx-auto max-w-[95%]"
               >
                 <div className="flex items-center justify-between mb-3">
                   <div className="font-semibold text-slate-800 dark:text-white">My Wallet</div>
@@ -82,26 +95,26 @@ export default function Iphone15Pro({
                     {isConnected ? 'Active' : 'Disconnected'}
                   </div>
                 </div>
-                <div className="p-3 bg-purple-50 rounded-2xl mb-3 dark:bg-gray-700 text-center">
+                <div className="p-4 bg-purple-50 rounded-2xl mb-4 dark:bg-gray-700 text-center">
                   <div className="text-xs text-slate-500 mb-1 dark:text-gray-200">Total Balance</div>
-                  <div className="text-xl font-bold text-slate-800 dark:text-white">
-                    {isConnected ? `${balance} ETH` : 'Connect wallet to view'}
+                  <div className="text-2xl font-bold text-slate-800 dark:text-white">
+                    {isConnected ? `${balance} ${currencySymbol}` : 'Connect wallet to view'}
                   </div>
-                  <div className="text-xs text-purple-600 dark:text-purple-200">
+                  <div className="text-sm text-purple-600 dark:text-purple-200">
                     ≈ ${usdValue} USD
                   </div>
                 </div>
                 <div className="grid grid-cols-3 gap-2">
-                  <button className="flex flex-col items-center justify-center p-2 rounded-xl bg-purple-50 cursor-pointer dark:bg-gray-700">
-                    <span className="text-[10px] text-slate-600 mb-1 dark:text-gray-200">Send</span>
+                  <button className="flex flex-col items-center justify-center p-3 rounded-xl bg-purple-50 cursor-pointer dark:bg-gray-700">
+                    <span className="text-xs text-slate-600 mb-1 dark:text-gray-200">Send</span>
                     <span className="text-purple-600 text-sm dark:text-purple-200">→</span>
                   </button>
-                  <button className="flex flex-col items-center justify-center p-2 rounded-xl bg-purple-50 cursor-pointer dark:bg-gray-700">
-                    <span className="text-[10px] text-slate-600 mb-1 dark:text-gray-200">Receive</span>
+                  <button className="flex flex-col items-center justify-center p-3 rounded-xl bg-purple-50 cursor-pointer dark:bg-gray-700">
+                    <span className="text-xs text-slate-600 mb-1 dark:text-gray-200">Receive</span>
                     <span className="text-purple-600 text-sm dark:text-purple-200">←</span>
                   </button>
-                  <button className="flex flex-col items-center justify-center p-2 rounded-xl bg-purple-50 cursor-pointer dark:bg-gray-700">
-                    <span className="text-[10px] text-slate-600 mb-1 dark:text-gray-200">Swap</span>
+                  <button className="flex flex-col items-center justify-center p-3 rounded-xl bg-purple-50 cursor-pointer dark:bg-gray-700">
+                    <span className="text-xs text-slate-600 mb-1 dark:text-gray-200">Swap</span>
                     <span className="text-purple-600 text-sm dark:text-purple-200">⇄</span>
                   </button>
                 </div>
