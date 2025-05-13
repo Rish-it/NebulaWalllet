@@ -72,11 +72,9 @@ export default function Iphone15Pro({
               playsInline
               style={{ filter: "contrast(1.1) saturate(1.2)" }}
             />
-            <div className="absolute inset-0 bg-gradient-to-b from-purple-900/5 to-purple-900/30 pointer-events-none"></div>
-            <div className="absolute inset-x-0 bottom-0 p-4 overflow-hidden">
+            <div className="absolute inset-x-0 bottom-0 p-6">
               <div 
-                className="bg-white rounded-3xl p-4 border border-purple-200 shadow-md dark:bg-gray-800 dark:border-gray-700"
-                style={{ backdropFilter: 'none' }}
+                className="bg-white rounded-3xl p-4 border border-purple-200 shadow-sm dark:bg-gray-800 dark:border-gray-700 mx-auto max-w-[90%]"
               >
                 <div className="flex items-center justify-between mb-3">
                   <div className="font-semibold text-slate-800 dark:text-white">My Wallet</div>
@@ -84,7 +82,7 @@ export default function Iphone15Pro({
                     {isConnected ? 'Active' : 'Disconnected'}
                   </div>
                 </div>
-                <div className="p-3 bg-purple-50 rounded-2xl mb-3 dark:bg-gray-700">
+                <div className="p-3 bg-purple-50 rounded-2xl mb-3 dark:bg-gray-700 text-center">
                   <div className="text-xs text-slate-500 mb-1 dark:text-gray-200">Total Balance</div>
                   <div className="text-xl font-bold text-slate-800 dark:text-white">
                     {isConnected ? `${balance} ETH` : 'Connect wallet to view'}
