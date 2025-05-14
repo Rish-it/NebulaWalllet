@@ -127,12 +127,6 @@ export default function WalletFeatures() {
       comingSoon: true,
     },
     {
-      title: "Self-Custody",
-      description: "Full control of your private keys and digital assets at all times.",
-      icon: <Lock className="h-7 w-7 text-purple-600 dark:text-purple-400" />,
-      link: "#wallet",
-    },
-    {
       title: "Security First",
       description: "Industry-leading security protocols to keep your assets safe in Web3.",
       icon: <ShieldCheck className="h-7 w-7 text-purple-600 dark:text-purple-400" />,
