@@ -1,17 +1,11 @@
 "use client";
 import React, { useState, useEffect } from "react";
 import { Button } from "./ui/button";
-import { FaEthereum } from "react-icons/fa"; 
 import { toast } from "sonner";
-import nacl from "tweetnacl";
-import { generateMnemonic, mnemonicToSeedSync, validateMnemonic } from "bip39";
-import { derivePath } from "ed25519-hd-key";
-import { Keypair } from "@solana/web3.js";
+import { validateMnemonic } from "bip39";
 import { Input } from "./ui/input";
-import { motion } from "framer-motion";
-import bs58 from "bs58";
-import { ethers } from "ethers";
 import { useWallet } from "@/context/WalletContext";
+import { KeyManager } from "@/lib/keyManager";
 import {
   ChevronDown,
   ChevronUp,
@@ -21,6 +15,8 @@ import {
   Grid2X2,
   List,
   Trash,
+  ShieldCheck,
+  Lock
 } from "lucide-react";
 import {
   AlertDialog,
@@ -33,80 +29,106 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "./ui/alert-dialog";
-import { NeonGradientCard } from "./ui/neon-gradient-card";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle
+} from "./ui/dialog";
 
 interface Wallet {
   publicKey: string;
-  privateKey: string;
-  mnemonic: string;
+  privateKey?: string;
+  mnemonic?: string;
   path: string;
+  name: string;
 }
 
 const WalletGenerator = () => {
-  const { walletType, setWalletType } = useWallet();
+  const { walletType, setWalletType, connectWallet } = useWallet();
   const [mnemonicWords, setMnemonicWords] = useState<string[]>(
     Array(12).fill(" ")
   );
-  const [pathTypes, setPathTypes] = useState<string[]>([]);
   const [wallets, setWallets] = useState<Wallet[]>([]);
   const [showMnemonic, setShowMnemonic] = useState<boolean>(false);
   const [mnemonicInput, setMnemonicInput] = useState<string>("");
   const [visiblePrivateKeys, setVisiblePrivateKeys] = useState<boolean[]>([]);
-  const [visiblePhrases, setVisiblePhrases] = useState<boolean[]>([]);
   const [gridView, setGridView] = useState<boolean>(false);
-  const pathTypeNames: { [key: string]: string } = {
-    "501": "Solana",
-    "60": "Ethereum",
-  };
+  const [isCreatingWallet, setIsCreatingWallet] = useState<boolean>(false);
+  const [passwordInput, setPasswordInput] = useState<string>("");
+  const [confirmPasswordInput, setConfirmPasswordInput] = useState<string>("");
+  const [walletName, setWalletName] = useState<string>("My Solana Wallet");
+  const [showPasswordDialog, setShowPasswordDialog] = useState<boolean>(false);
+  const [isImporting, setIsImporting] = useState<boolean>(false);
+  const [mnemonicStrength, setMnemonicStrength] = useState<128 | 256>(128); // 128 for 12 words, 256 for 24 words
+  const [passwordStrength, setPasswordStrength] = useState<number>(0);
 
-  const pathTypeName = pathTypeNames[pathTypes[0]] || "";
+  // Load wallets from secure storage
+  useEffect(() => {
+    loadWallets();
+  }, []);
 
   // Sync with WalletContext wallet type
   useEffect(() => {
-    if (walletType === 'ethereum' && (!pathTypes.length || pathTypes[0] !== '60')) {
-      setPathTypes(['60']);
-    } else if (walletType === 'solana' && (!pathTypes.length || pathTypes[0] !== '501')) {
-      setPathTypes(['501']);
+    // No need to set path types anymore as we're focusing on Solana
+  }, [walletType]);
+
+  const loadWallets = () => {
+    try {
+      // Get wallets from localStorage (just public keys and metadata)
+      const storedWallets = localStorage.getItem("nebula_wallets");
+      
+      if (storedWallets) {
+        const parsedWallets = JSON.parse(storedWallets);
+        
+        // Map to our wallet interface (without sensitive data)
+        const secureWallets = parsedWallets.map((wallet: any) => ({
+          publicKey: wallet.publicKey,
+          name: wallet.name || "My Wallet",
+          path: `m/44'/501'/0'/0'`, // Solana path
+        }));
+        
+        setWallets(secureWallets);
+        setVisiblePrivateKeys(secureWallets.map(() => false));
+      }
+    } catch (error) {
+      console.error("Failed to load wallets:", error);
+      toast.error("Failed to load wallets");
     }
-  }, [walletType, pathTypes]);
+  };
 
-  useEffect(() => {
-    const storedWallets = localStorage.getItem("wallets");
-    const storedMnemonic = localStorage.getItem("mnemonics");
-    const storedPathTypes = localStorage.getItem("paths");
-
-    if (storedWallets && storedMnemonic && storedPathTypes) {
-      setMnemonicWords(JSON.parse(storedMnemonic));
-      setWallets(JSON.parse(storedWallets));
-      setPathTypes(JSON.parse(storedPathTypes));
-      setVisiblePrivateKeys(JSON.parse(storedWallets).map(() => false));
-      setVisiblePhrases(JSON.parse(storedWallets).map(() => false));
+  const handleDeleteWallet = (publicKey: string) => {
+    try {
+      // Get current wallets
+      const storedWallets = JSON.parse(localStorage.getItem("nebula_wallets") || "[]");
+      
+      // Filter out the wallet to delete
+      const updatedWallets = storedWallets.filter((wallet: any) => wallet.publicKey !== publicKey);
+      
+      // Save back
+      localStorage.setItem("nebula_wallets", JSON.stringify(updatedWallets));
+      
+      // Update state
+      loadWallets();
+      
+      toast.success("Wallet deleted successfully!");
+    } catch (error) {
+      console.error("Error deleting wallet:", error);
+      toast.error("Failed to delete wallet");
     }
-  }, []);
-
-  const handleDeleteWallet = (index: number) => {
-    const updatedWallets = wallets.filter((_, i) => i !== index);
-    const updatedPathTypes = pathTypes.filter((_, i) => i !== index);
-
-    setWallets(updatedWallets);
-    setPathTypes(updatedPathTypes);
-    localStorage.setItem("wallets", JSON.stringify(updatedWallets));
-    localStorage.setItem("paths", JSON.stringify(updatedPathTypes));
-    setVisiblePrivateKeys(visiblePrivateKeys.filter((_, i) => i !== index));
-    setVisiblePhrases(visiblePhrases.filter((_, i) => i !== index));
-    toast.success("Wallet deleted successfully!");
   };
 
   const handleClearWallets = () => {
-    localStorage.removeItem("wallets");
-    localStorage.removeItem("mnemonics");
-    localStorage.removeItem("paths");
-    setWallets([]);
-    setMnemonicWords([]);
-    setPathTypes([]);
-    setVisiblePrivateKeys([]);
-    setVisiblePhrases([]);
-    toast.success("All wallets cleared.");
+    try {
+      localStorage.removeItem("nebula_wallets");
+      setWallets([]);
+      setVisiblePrivateKeys([]);
+      toast.success("All wallets cleared.");
+    } catch (error) {
+      console.error("Error clearing wallets:", error);
+      toast.error("Failed to clear wallets");
+    }
   };
 
   const copyToClipboard = (content: string) => {
@@ -114,248 +136,270 @@ const WalletGenerator = () => {
     toast.success("Copied to clipboard!");
   };
 
-  const togglePrivateKeyVisibility = (index: number) => {
-    setVisiblePrivateKeys(
-      visiblePrivateKeys.map((visible, i) => (i === index ? !visible : visible))
-    );
+  const checkPasswordStrength = (password: string): number => {
+    // Password strength rules (score 0-100)
+    let score = 0;
+    
+    if (password.length >= 8) score += 20;
+    if (password.length >= 12) score += 10;
+    if (/[A-Z]/.test(password)) score += 20;
+    if (/[0-9]/.test(password)) score += 20;
+    if (/[^A-Za-z0-9]/.test(password)) score += 20;
+    if (password.length >= 16) score += 10;
+    
+    return score;
   };
 
-  const togglePhraseVisibility = (index: number) => {
-    setVisiblePhrases(
-      visiblePhrases.map((visible, i) => (i === index ? !visible : visible))
-    );
+  const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newPassword = e.target.value;
+    setPasswordInput(newPassword);
+    setPasswordStrength(checkPasswordStrength(newPassword));
   };
 
-  const generateWalletFromMnemonic = (
-    pathType: string,
-    mnemonic: string,
-    accountIndex: number
-  ): Wallet | null => {
+  const createWallet = async () => {
+    setIsCreatingWallet(true);
+    
     try {
-      const seedBuffer = mnemonicToSeedSync(mnemonic);
-      const path = `m/44'/${pathType}'/0'/${accountIndex}'`;
-      const { key: derivedSeed } = derivePath(path, seedBuffer.toString("hex"));
-
-      let publicKeyEncoded: string;
-      let privateKeyEncoded: string;
-
-      if (pathType === "501") {
-        // Solana
-        const { secretKey } = nacl.sign.keyPair.fromSeed(derivedSeed);
-        const keypair = Keypair.fromSecretKey(secretKey);
-
-        privateKeyEncoded = bs58.encode(secretKey);
-        publicKeyEncoded = keypair.publicKey.toBase58();
-      } else if (pathType === "60") {
-        // Ethereum
-        const privateKey = Buffer.from(derivedSeed).toString("hex");
-        privateKeyEncoded = privateKey;
-
-        const wallet = new ethers.Wallet(privateKey);
-        publicKeyEncoded = wallet.address;
-      } else {
-        toast.error("Unsupported path type.");
-        return null;
-      }
-
-      return {
-        publicKey: publicKeyEncoded,
-        privateKey: privateKeyEncoded,
-        mnemonic,
-        path,
-      };
-    } catch (error) {
-      toast.error("Failed to generate wallet. Please try again.");
-      return null;
-    }
-  };
-
-  const handleGenerateWallet = () => {
-    let mnemonic = mnemonicInput.trim();
-
-    if (mnemonic) {
-      if (!validateMnemonic(mnemonic)) {
-        toast.error("Invalid recovery phrase. Please try again.");
+      // Validate password
+      if (passwordInput !== confirmPasswordInput) {
+        toast.error("Passwords do not match");
+        setIsCreatingWallet(false);
         return;
       }
-    } else {
-      mnemonic = generateMnemonic();
-    }
-
-    const words = mnemonic.split(" ");
-    setMnemonicWords(words);
-
-    const wallet = generateWalletFromMnemonic(
-      pathTypes[0],
-      mnemonic,
-      wallets.length
-    );
-    if (wallet) {
-      const updatedWallets = [...wallets, wallet];
-      setWallets(updatedWallets);
-      localStorage.setItem("wallets", JSON.stringify(updatedWallets));
-      localStorage.setItem("mnemonics", JSON.stringify(words));
-      localStorage.setItem("paths", JSON.stringify(pathTypes));
-      setVisiblePrivateKeys([...visiblePrivateKeys, false]);
-      setVisiblePhrases([...visiblePhrases, false]);
-      toast.success("Wallet generated successfully!");
+      
+      if (passwordInput.length < 8) {
+        toast.error("Password must be at least 8 characters");
+        setIsCreatingWallet(false);
+        return;
+      }
+      
+      // Generate or use provided mnemonic
+      let mnemonic: string;
+      
+      if (isImporting) {
+        if (!mnemonicInput.trim()) {
+          toast.error("Please enter a recovery phrase");
+          setIsCreatingWallet(false);
+          return;
+        }
+        
+        if (!validateMnemonic(mnemonicInput.trim())) {
+          toast.error("Invalid recovery phrase");
+          setIsCreatingWallet(false);
+          return;
+        }
+        
+        mnemonic = mnemonicInput.trim();
+      } else {
+        // Generate new mnemonic with selected strength
+        mnemonic = KeyManager.generateMnemonic(mnemonicStrength);
+      }
+      
+      // Show mnemonic to user
+      setMnemonicWords(mnemonic.split(" "));
+      setShowMnemonic(true);
+      
+      // Store wallet securely
+      await KeyManager.storeWallet(mnemonic, passwordInput, walletName);
+      
+      // Reload wallet list
+      loadWallets();
+      
+      toast.success("Wallet created successfully!");
+      setShowPasswordDialog(false);
+    } catch (error) {
+      console.error("Error creating wallet:", error);
+      toast.error("Failed to create wallet");
+    } finally {
+      setIsCreatingWallet(false);
+      setPasswordInput("");
+      setConfirmPasswordInput("");
     }
   };
 
-  const handleAddWallet = () => {
-    if (!mnemonicWords) {
-      toast.error("No mnemonic found. Please generate a wallet first.");
-      return;
-    }
-
-    const wallet = generateWalletFromMnemonic(
-      pathTypes[0],
-      mnemonicWords.join(" "),
-      wallets.length
-    );
-    if (wallet) {
-      const updatedWallets = [...wallets, wallet];
-      const updatedPathType = [pathTypes, pathTypes];
-      setWallets(updatedWallets);
-      localStorage.setItem("wallets", JSON.stringify(updatedWallets));
-      localStorage.setItem("pathTypes", JSON.stringify(updatedPathType));
-      setVisiblePrivateKeys([...visiblePrivateKeys, false]);
-      setVisiblePhrases([...visiblePhrases, false]);
-      toast.success("Wallet generated successfully!");
+  const handleConnectWallet = async (publicKey: string) => {
+    try {
+      // Prompt for password before connecting
+      const password = prompt("Enter your wallet password to unlock");
+      if (!password) return;
+      
+      // Connect the selected wallet
+      await connectWallet(password);
+    } catch (error) {
+      console.error("Error connecting wallet:", error);
+      toast.error("Failed to connect wallet");
     }
   };
 
-  // Function to handle blockchain selection and sync with WalletContext
-  const handleBlockchainSelect = (pathType: string) => {
-    setPathTypes([pathType]);
-    
-    // Update WalletContext type
-    if (pathType === '501') {
-      setWalletType('solana');
-    } else if (pathType === '60') {
-      setWalletType('ethereum');
-    }
-    
-    toast.success("Wallet selected. Please generate a wallet to continue.");
+  const getPasswordStrengthColor = () => {
+    if (passwordStrength < 40) return "bg-red-500";
+    if (passwordStrength < 70) return "bg-yellow-500";
+    return "bg-green-500";
   };
 
   return (
-    <div className="flex flex-col gap-3">
-      {wallets.length === 0 && (
-        <motion.div
-          className="flex flex-col gap-3"
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{
-            duration: 0.3,
-            ease: "easeInOut",
-          }}
-        >
-          <div className="flex flex-col gap-4">
-            {pathTypes.length === 0 && (
-              <motion.div
-                initial={{ opacity: 0, y: -20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{
-                  duration: 0.3,
-                  ease: "easeInOut",
-                }}
-                className="flex gap-4 flex-col my-6"
-              >
-                
-                <NeonGradientCard>
-                <div className="flex flex-col gap-2 ">
-                  <h1 className="tracking-tighter text-3xl md:text-4xl font-black">
-                  Nebula supports multiple blockchains 
-                  </h1>
-                  <p className="text-primary/80 font-semibold text-md">
-                   Choose a blockchain to get started.
-                  </p>
-                </div>
-                <div className="flex gap-2">
-                  <Button
-                    size="sm"
-                    onClick={() => handleBlockchainSelect("501")}
-                    className={`rounded-full mt-2 hover:bg-[#cccccc] ${walletType === 'solana' ? 'bg-purple-100 text-purple-700' : ''}`}
-                  > <div className="flex items-center space-x-4 z-10">
-                <img 
-                src="https://cdn-icons-png.flaticon.com/128/14446/14446238.png" 
-                alt="Solana" 
-                className="w-5 mr-2" 
-              />
-                  </div>
-                    Solana
-                  </Button>
-                  <Button
-                    size="sm"
-                    onClick={() => handleBlockchainSelect("60")}
-                    className={`rounded-full mt-2 hover:bg-[#cccccc] ${walletType === 'ethereum' ? 'bg-purple-100 text-purple-700' : ''}`}
-                  >
-                    <div className="flex items-center space-x-4 z-10">
-                    <FaEthereum className="text-xl mr-2"/> 
-                    </div>
-                    Ethereum
-                  </Button>
-                </div>
-                </NeonGradientCard>
-              </motion.div>
-            )}
-            {pathTypes.length !== 0 && (
-              <motion.div
-                initial={{ opacity: 0, y: -20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{
-                  duration: 0.3,
-                  ease: "easeInOut",
-                }}
-                className="flex flex-col gap-4 my-6"
-              >
+    <div className="flex flex-col gap-6 w-full max-w-2xl mx-auto">
+      <div className="notion-card">
+        <h2 className="notion-heading text-xl mb-3">Wallet Generator</h2>
+        <p className="notion-text mb-4">
+          Create or import your Solana wallet securely.
+        </p>
+
+        <div className="flex flex-col sm:flex-row gap-3 mt-2">
+          <Button
+            onClick={() => {
+              setIsImporting(false);
+              setWalletName("My Solana Wallet");
+              setMnemonicInput("");
+              setShowPasswordDialog(true);
+            }}
+            className="bg-primary text-white hover:bg-primary/90"
+          >
+            Create New Wallet
+          </Button>
+          
+          <Button
+            onClick={() => {
+              setIsImporting(true);
+              setWalletName("Imported Wallet");
+              setShowPasswordDialog(true);
+            }}
+            variant="outline"
+            className="border-primary/20 hover:border-primary/30"
+          >
+            Import Existing Wallet
+          </Button>
+        </div>
+
+        <Dialog open={showPasswordDialog} onOpenChange={setShowPasswordDialog}>
+          <DialogContent className="notion-card">
+            <DialogHeader>
+              <DialogTitle>
+                {isImporting ? "Import Wallet" : "Create New Wallet"}
+              </DialogTitle>
+              <DialogDescription className="notion-text text-sm">
+                {isImporting
+                  ? "Enter your 12 or 24-word recovery phrase and set a password to secure your wallet."
+                  : "Set a strong password to protect your wallet. This password will be used to encrypt your private key."}
+              </DialogDescription>
+            </DialogHeader>
+            
+            <div className="flex flex-col gap-4 my-4">
+              <div className="flex flex-col gap-2">
+                <label className="text-sm">Wallet Name</label>
+                <Input
+                  type="text"
+                  placeholder="My Solana Wallet"
+                  value={walletName}
+                  onChange={(e) => setWalletName(e.target.value)}
+                  className="text-sm"
+                />
+              </div>
+              
+              {isImporting && (
                 <div className="flex flex-col gap-2">
-                  <h1 className="tracking-tighter text-4xl md:text-5xl font-black">
-                    Secret Recovery Phrase
-                  </h1>
-                  <p className="text-primary/80 font-semibold text-lg md:text-xl">
-                    Save these words in a safe place.
-                  </p>
-                </div>
-                <div className="flex flex-col md:flex-row gap-4">
+                  <label className="text-sm">Recovery Phrase</label>
                   <Input
                     type="password"
-                    placeholder="Enter your secret phrase (or leave blank to generate)"
-                    onChange={(e) => setMnemonicInput(e.target.value)}
+                    placeholder="Enter your 12 or 24 word recovery phrase with spaces"
                     value={mnemonicInput}
+                    onChange={(e) => setMnemonicInput(e.target.value)}
+                    className="text-sm"
                   />
-                  <Button size={"lg"} onClick={() => handleGenerateWallet()}
-                       className="rounded-full">
-                    {mnemonicInput ? "Add Wallet" : "Generate Wallet"}
-                  </Button>
                 </div>
-              </motion.div>
-            )}
-          </div>
-        </motion.div>
-      )}
+              )}
+              
+              {!isImporting && (
+                <div className="flex flex-col gap-2">
+                  <label className="text-sm">Recovery Phrase Length</label>
+                  <div className="flex gap-2">
+                    <Button
+                      type="button"
+                      variant={mnemonicStrength === 128 ? "default" : "outline"}
+                      onClick={() => setMnemonicStrength(128)}
+                      className="w-full text-sm"
+                      size="sm"
+                    >
+                      12 Words
+                    </Button>
+                    <Button
+                      type="button"
+                      variant={mnemonicStrength === 256 ? "default" : "outline"}
+                      onClick={() => setMnemonicStrength(256)}
+                      className="w-full text-sm"
+                      size="sm"
+                    >
+                      24 Words
+                    </Button>
+                  </div>
+                </div>
+              )}
+              
+              <div className="flex flex-col gap-2">
+                <label className="text-sm">Password</label>
+                <Input
+                  type="password"
+                  placeholder="Enter password"
+                  value={passwordInput}
+                  onChange={handlePasswordChange}
+                  className="text-sm"
+                />
+                <div className="w-full h-1.5 bg-secondary rounded-full overflow-hidden">
+                  <div 
+                    className={`h-full ${getPasswordStrengthColor()}`}
+                    style={{ width: `${passwordStrength}%` }}
+                  />
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  {passwordStrength < 40 && "Weak password"}
+                  {passwordStrength >= 40 && passwordStrength < 70 && "Moderate password"}
+                  {passwordStrength >= 70 && "Strong password"}
+                </p>
+              </div>
+              
+              <div className="flex flex-col gap-2">
+                <label className="text-sm">Confirm Password</label>
+                <Input
+                  type="password"
+                  placeholder="Confirm password"
+                  value={confirmPasswordInput}
+                  onChange={(e) => setConfirmPasswordInput(e.target.value)}
+                  className="text-sm"
+                />
+              </div>
+              
+              <Button
+                onClick={createWallet}
+                disabled={isCreatingWallet}
+                className="mt-2 bg-primary hover:bg-primary/90"
+              >
+                {isCreatingWallet ? "Processing..." : isImporting ? "Import Wallet" : "Create Wallet"}
+              </Button>
+            </div>
+          </DialogContent>
+        </Dialog>
+      </div>
 
-      {mnemonicWords && wallets.length > 0 && (
-        <motion.div
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{
-            duration: 0.3,
-            ease: "easeInOut",
-          }}
-          className="group flex flex-col items-center gap-4 cursor-pointer rounded-lg border border-primary/10 p-8"
-        >
+      {mnemonicWords.length > 0 && mnemonicWords[0] !== " " && (
+        <div className="notion-card">
           <div
-            className="flex w-full justify-between items-center"
+            className="flex w-full justify-between items-center mb-2 cursor-pointer"
             onClick={() => setShowMnemonic(!showMnemonic)}
           >
-            <h2 className="text-2xl md:text-3xl font-bold tracking-tighter">
-              Your Secret Phrase
-            </h2>
+            <div className="flex items-center gap-2">
+              <ShieldCheck className="text-primary h-4 w-4" />
+              <h2 className="notion-heading text-lg">
+                Recovery Phrase
+              </h2>
+            </div>
             <Button
-              onClick={() => setShowMnemonic(!showMnemonic)}
+              onClick={(e) => {
+                e.stopPropagation();
+                setShowMnemonic(!showMnemonic);
+              }}
               variant="ghost"
+              size="sm"
+              className="p-1 h-auto"
             >
               {showMnemonic ? (
                 <ChevronUp className="size-4" />
@@ -366,215 +410,136 @@ const WalletGenerator = () => {
           </div>
 
           {showMnemonic && (
-            <motion.div
-              initial={{ opacity: 0, y: -20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{
-                duration: 0.3,
-                ease: "easeInOut",
-              }}
-              className="flex flex-col w-full items-center justify-center"
-              onClick={() => copyToClipboard(mnemonicWords.join(" "))}
-            >
-              <motion.div
-                initial={{ opacity: 0, y: -20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{
-                  duration: 0.3,
-                  ease: "easeInOut",
-                }}
-                className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2 justify-center w-full items-center mx-auto my-8"
+            <div className="mt-3">
+              <div className="bg-amber-100/10 p-3 rounded-md text-amber-700 text-xs mb-4 border border-amber-200/20">
+                <strong>WARNING:</strong> Never share your recovery phrase. 
+                Anyone with this phrase can access your funds.
+                Write it down and keep it offline.
+              </div>
+              
+              <div
+                className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2 mb-4"
+                onClick={() => copyToClipboard(mnemonicWords.join(" "))}
               >
                 {mnemonicWords.map((word, index) => (
-                  <p
+                  <div
                     key={index}
-                    className="md:text-lg bg-foreground/5 hover:bg-foreground/10 transition-all duration-300 rounded-lg p-4"
+                    className="text-sm bg-secondary hover:bg-secondary/70 transition-all duration-200 rounded-md p-2 cursor-pointer"
                   >
-                    {word}
-                  </p>
+                    <span className="text-muted-foreground mr-1 text-xs">{index + 1}.</span> {word}
+                  </div>
                 ))}
-              </motion.div>
-              <div className="text-sm md:text-base text-primary/50 flex w-full gap-2 items-center group-hover:text-primary/80 transition-all duration-300">
-                <Copy className="size-4" /> Click Anywhere To Copy
               </div>
-            </motion.div>
+              <div className="text-xs text-muted-foreground flex items-center gap-1 cursor-pointer" 
+                   onClick={() => copyToClipboard(mnemonicWords.join(" "))}>
+                <Copy className="size-3" /> Click to copy full phrase
+              </div>
+            </div>
           )}
-        </motion.div>
+        </div>
       )}
 
       {/* Display wallet pairs */}
       {wallets.length > 0 && (
-        <motion.div
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{
-            delay: 0.3,
-            duration: 0.3,
-            ease: "easeInOut",
-          }}
-          className="flex flex-col gap-8 mt-6"
-        >
-          <div className="flex md:flex-row flex-col justify-between w-full gap-4 md:items-center">
-            <h2 className="tracking-tighter text-3xl md:text-4xl font-extrabold">
-              {pathTypeName} Wallet
+        <div className="notion-card">
+          <div className="flex justify-between items-center mb-4">
+            <h2 className="notion-heading text-lg flex items-center">
+              Your Wallets 
+              <span className="text-muted-foreground text-sm ml-2">({wallets.length})</span>
             </h2>
-            <div className="flex gap-2">
-              {wallets.length > 1 && (
-                <Button
-                  variant={"ghost"}
-                  onClick={() => setGridView(!gridView)}
-                  className="hidden md:block"
-                >
-                  {gridView ? <Grid2X2 /> : <List />}
-                </Button>
-              )}
-              <Button onClick={() => handleAddWallet()}    className="rounded-full">Add Wallet</Button>
+            <div className="flex gap-2 items-center">
+              <Button
+                onClick={() => setGridView(!gridView)}
+                variant="ghost"
+                size="sm"
+                className="p-1 h-7 w-7"
+              >
+                {gridView ? <List className="size-4" /> : <Grid2X2 className="size-4" />}
+              </Button>
+              
               <AlertDialog>
                 <AlertDialogTrigger asChild>
-                  <Button variant="destructive" className="self-end rounded-full">
-                    Clear Wallets
+                  <Button variant="ghost" size="sm" className="p-1 h-7 w-7 text-red-500 hover:text-red-600">
+                    <Trash className="size-4" />
                   </Button>
                 </AlertDialogTrigger>
-                <AlertDialogContent>
+                <AlertDialogContent className="notion-card">
                   <AlertDialogHeader>
-                    <AlertDialogTitle>
-                      Are you sure you want to delete all wallets?
-                    </AlertDialogTitle>
-                    <AlertDialogDescription>
-                      This action cannot be undone. This will permanently delete
-                      your wallets and keys from local storage.
+                    <AlertDialogTitle>Delete all wallets?</AlertDialogTitle>
+                    <AlertDialogDescription className="notion-text text-sm">
+                      This will delete all your wallet information from this browser.
+                      Make sure you have backed up your recovery phrases first.
                     </AlertDialogDescription>
                   </AlertDialogHeader>
                   <AlertDialogFooter>
-                    <AlertDialogCancel className="rounded-full">Cancel</AlertDialogCancel>
-                    <AlertDialogAction onClick={() => handleClearWallets()}    className="rounded-full">
-                      Delete
+                    <AlertDialogCancel className="text-sm">Cancel</AlertDialogCancel>
+                    <AlertDialogAction onClick={handleClearWallets} className="bg-red-500 text-sm">
+                      Delete All
                     </AlertDialogAction>
                   </AlertDialogFooter>
                 </AlertDialogContent>
               </AlertDialog>
             </div>
           </div>
-          <div
-            className={`grid gap-6 grid-cols-1 col-span-1  ${
-              gridView ? "md:grid-cols-2 lg:grid-cols-3" : ""
-            }`}
-          >
-            {wallets.map((wallet: any, index: number) => (
-              <motion.div
+
+          <div className={`grid gap-4 ${gridView ? "grid-cols-1 sm:grid-cols-2" : "grid-cols-1"}`}>
+            {wallets.map((wallet, index) => (
+              <div
                 key={index}
-                initial={{ opacity: 0, y: -20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{
-                  delay: 0.3 + index * 0.1,
-                  duration: 0.3,
-                  ease: "easeInOut",
-                }}
-                className="flex flex-col rounded-2xl border border-primary/10"
+                className="border border-border rounded-md overflow-hidden bg-card/50"
               >
-                <div className="flex justify-between px-8 py-6">
-                  <h3 className="font-bold text-2xl md:text-3xl tracking-tighter ">
-                    Wallet {index + 1}
-                  </h3>
-                  <AlertDialog>
-                    <AlertDialogTrigger asChild>
-                      <Button
-                        variant="ghost"
-                        className="flex gap-2 items-center"
-                      >
-                        <Trash className="size-4 text-destructive" />
-                      </Button>
-                    </AlertDialogTrigger>
-                    <AlertDialogContent>
-                      <AlertDialogHeader>
-                        <AlertDialogTitle>
-                          Are you sure you want to delete all wallets?
-                        </AlertDialogTitle>
-                        <AlertDialogDescription>
-                          This action cannot be undone. This will permanently
-                          delete your wallets and keys from local storage.
-                        </AlertDialogDescription>
-                      </AlertDialogHeader>
-                      <AlertDialogFooter>
-                        <AlertDialogCancel>Cancel</AlertDialogCancel>
-                        <AlertDialogAction
-                          onClick={() => handleDeleteWallet(index)}
-                          className="text-destructive"
-                        >
-                          Delete
-                        </AlertDialogAction>
-                      </AlertDialogFooter>
-                    </AlertDialogContent>
-                  </AlertDialog>
+                <div className="bg-secondary/40 px-4 py-2 flex justify-between items-center">
+                  <div className="font-medium text-sm">
+                    {wallet.name || "My Wallet"}
+                  </div>
+                  <div className="flex gap-1">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => handleConnectWallet(wallet.publicKey)}
+                      className="h-7 text-xs"
+                    >
+                      <Lock className="size-3 mr-1" /> Connect
+                    </Button>
+                    
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <Button variant="ghost" size="sm" className="h-7 w-7 p-0 text-red-500 hover:text-red-600">
+                          <Trash className="size-3" />
+                        </Button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent className="notion-card">
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>Delete wallet?</AlertDialogTitle>
+                          <AlertDialogDescription className="notion-text text-sm">
+                            This will remove the wallet from your browser. 
+                            Make sure you have the recovery phrase backed up.
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel className="text-sm">Cancel</AlertDialogCancel>
+                          <AlertDialogAction onClick={() => handleDeleteWallet(wallet.publicKey)} className="bg-red-500 text-sm">
+                            Delete
+                          </AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
+                  </div>
                 </div>
-                <div className="flex flex-col gap-8 px-8 py-4 rounded-2xl bg-secondary/50">
+                
+                <div className="p-3">
+                  <div className="mb-1 text-xs text-muted-foreground">Public Key</div>
                   <div
-                    className="flex flex-col w-full gap-2"
+                    className="font-mono text-sm truncate cursor-pointer hover:text-primary transition-colors"
                     onClick={() => copyToClipboard(wallet.publicKey)}
                   >
-                    <span className="text-lg md:text-xl font-bold tracking-tighter">
-                      Public Key
-                    </span>
-                    <p className="text-primary/80 font-medium cursor-pointer hover:text-primary transition-all duration-300 truncate">
-                      {wallet.publicKey}
-                    </p>
+                    {wallet.publicKey}
                   </div>
-                  <div className="flex flex-col w-full gap-2">
-                    <span className="text-lg md:text-xl font-bold tracking-tighter">
-                      Private Key
-                    </span>
-                    <div className="flex justify-between w-full items-center gap-2">
-                      <p
-                        onClick={() => copyToClipboard(wallet.privateKey)}
-                        className="text-primary/80 font-medium cursor-pointer hover:text-primary transition-all duration-300 truncate"
-                      >
-                        {visiblePrivateKeys[index]
-                          ? wallet.privateKey
-                          : "•".repeat(wallet.mnemonic.length)}
-                      </p>
-                      <Button
-                        variant="ghost"
-                        onClick={() => togglePrivateKeyVisibility(index)}
-                      >
-                        {visiblePrivateKeys[index] ? (
-                          <EyeOff className="size-4" />
-                        ) : (
-                          <Eye className="size-4" />
-                        )}
-                      </Button>
-                    </div>
-                  </div>
-                  {/* <div className="flex flex-col w-full gap-2">
-                    <span className="text-lg md:text-xl font-bold tracking-tighter">
-                      Secret Phrase
-                    </span>
-                    <div className="flex justify-between w-full items-center gap-2">
-                      <p
-                        onClick={() => copyToClipboard(wallet.mnemonic)}
-                        className="text-primary/80 font-medium cursor-pointer hover:text-primary transition-all duration-300 truncate"
-                      >
-                        {visiblePhrases[index]
-                          ? wallet.mnemonic
-                          : "•".repeat(wallet.mnemonic.length)}
-                      </p>
-
-                      <Button
-                        variant="ghost"
-                        onClick={() => togglePhraseVisibility(index)}
-                      >
-                        {visiblePhrases[index] ? (
-                          <EyeOff className="size-4" />
-                        ) : (
-                          <Eye className="size-4" />
-                        )}
-                      </Button>
-                    </div>
-                  </div> */}
                 </div>
-              </motion.div>
+              </div>
             ))}
           </div>
-        </motion.div>
+        </div>
       )}
     </div>
   );

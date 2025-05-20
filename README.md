@@ -8,6 +8,13 @@
 
 NebulaWallet is a secure, intuitive cryptocurrency management platform designed for digital asset control and decentralized application access. The wallet provides comprehensive blockchain interaction capabilities with a focus on security and user experience.
 
+## Recent Updates
+
+- **UI Enhancements**: Improved wallet card UI with fixed title "Pick Your Wallet" and redesigned cross button
+- **Navigation Improvement**: Added click functionality on Nebula Wallet text/icon to navigate to home page
+- **Codebase Optimization**: Removed unused components to reduce bundle size and improve maintainability
+- **Build Process Fixes**: Added Suspense boundaries for proper server-side rendering compatibility
+
 ## Key Features
 
 - **Multi-Chain Architecture**: Integrated support for Ethereum and Solana blockchain ecosystems
@@ -36,7 +43,12 @@ npm install
 npm run dev
 ```
 
-4. Access application interface at [http://localhost:3000](http://localhost:3000)
+4. Build the application
+```bash
+npm run build
+```
+
+5. Access application interface at [http://localhost:3000](http://localhost:3000)
 
 ## Required Dependencies
 
@@ -80,15 +92,15 @@ NebulaWallet utilizes modern development frameworks and libraries to ensure perf
    - Cross-chain token exchange functionality
    - Yield optimization interfaces (placeholder implementation)
 
-4. **Market Data (`/components/CryptoStats.tsx`)**
-   - Dynamic cryptocurrency price tracking
-   - Market trend analysis and statistical presentation
-   - Multiple currency denomination support (USD, USDC, USDT)
+4. **Solana Wallet Connector (`/components/SolanaWalletConnector.tsx`)**
+   - Custom UI styling for Solana wallet connection modal
+   - Enhanced user experience with improved buttons and navigation
+   - Client-side wallet selection and connection handling
 
-5. **Test Environment System**
-   - Simulated balance tracking via local storage
-   - Transaction simulation without blockchain interaction
-   - Validator behavior replication for staking testing
+5. **Unified Wallet Connector (`/components/UnifiedWalletConnector.tsx`)**
+   - Centralized wallet connection interface for multiple blockchains
+   - Consistent UI experience across different wallet types
+   - Status indicators for connected accounts
 
 ### Data Processing Flow
 
