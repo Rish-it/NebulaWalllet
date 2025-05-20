@@ -4,25 +4,25 @@
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 240 10% 3.9%;
-    --card: 0 0% 100%;
-    --card-foreground: 240 10% 3.9%;
-    --popover: 0 0% 100%;
-    --popover-foreground: 240 10% 3.9%;
-    --primary: 240 5.9% 10%;
-    --primary-foreground: 0 0% 98%;
-    --secondary: 240 4.8% 95.9%;
-    --secondary-foreground: 240 5.9% 10%;
-    --muted: 240 4.8% 95.9%;
-    --muted-foreground: 240 3.8% 46.1%;
-    --accent: 240 4.8% 95.9%;
-    --accent-foreground: 240 5.9% 10%;
+    --background: 250 20% 99%;
+    --foreground: 250 10% 10%;
+    --card: 250 20% 99%;
+    --card-foreground: 250 10% 10%;
+    --popover: 250 20% 99%;
+    --popover-foreground: 250 10% 10%;
+    --primary: 265 83% 45%;
+    --primary-foreground: 250 10% 98%;
+    --secondary: 250 30% 96%;
+    --secondary-foreground: 250 10% 10%;
+    --muted: 250 20% 96%;
+    --muted-foreground: 250 10% 40%;
+    --accent: 265 70% 90%;
+    --accent-foreground: 265 80% 25%;
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 0 0% 98%;
-    --border: 240 5.9% 90%;
-    --input: 240 5.9% 90%;
-    --ring: 240 10% 3.9%;
+    --border: 250 20% 92%;
+    --input: 250 20% 92%;
+    --ring: 265 83% 45%;
     --radius: 0.5rem;
     
     /* Custom Nebula Colors */
@@ -30,8 +30,8 @@
     --nebula-purple-dark: 265 83% 40%;
     --nebula-purple-light: 265 83% 95%;
     --nebula-purple-muted: 265 30% 95%;
-    --nebula-slate: 215 25% 27%;
-    --nebula-slate-light: 215 25% 97%;
+    --nebula-slate: 250 15% 27%;
+    --nebula-slate-light: 250 20% 97%;
     
     /* Chart Colors */
     --chart-1: 265 83% 45%;
@@ -42,33 +42,33 @@
   }
 
   .dark {
-    --background: 240 10% 7%;
-    --foreground: 0 0% 93%;
-    --card: 240 10% 11%;
-    --card-foreground: 0 0% 98%;
-    --popover: 240 10% 9%;
-    --popover-foreground: 0 0% 98%;
-    --primary: 0 0% 98%;
-    --primary-foreground: 240 5.9% 10%;
-    --secondary: 240 3.7% 15.9%;
-    --secondary-foreground: 0 0% 98%;
-    --muted: 240 3.7% 15.9%;
-    --muted-foreground: 240 5% 64.9%;
-    --accent: 240 3.7% 15.9%;
-    --accent-foreground: 0 0% 98%;
+    --background: 250 15% 8%;
+    --foreground: 250 10% 95%;
+    --card: 250 15% 11%;
+    --card-foreground: 250 10% 98%;
+    --popover: 250 15% 9%;
+    --popover-foreground: 250 10% 98%;
+    --primary: 265 83% 65%;
+    --primary-foreground: 250 10% 10%;
+    --secondary: 250 15% 15%;
+    --secondary-foreground: 250 10% 98%;
+    --muted: 250 15% 15%;
+    --muted-foreground: 250 10% 70%;
+    --accent: 265 50% 20%;
+    --accent-foreground: 265 80% 80%;
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 0 0% 98%;
-    --border: 240 3.7% 15.9%;
-    --input: 240 3.7% 15.9%;
-    --ring: 240 4.9% 83.9%;
+    --border: 250 15% 18%;
+    --input: 250 15% 18%;
+    --ring: 265 83% 65%;
     
     /* Custom Nebula Colors */
     --nebula-purple: 265 83% 65%;
     --nebula-purple-dark: 265 83% 60%;
     --nebula-purple-light: 265 20% 18%;
     --nebula-purple-muted: 265 15% 20%;
-    --nebula-slate: 215 25% 90%;
-    --nebula-slate-light: 215 15% 20%;
+    --nebula-slate: 250 15% 90%;
+    --nebula-slate-light: 250 15% 20%;
     
     /* Chart Colors - Brighter in dark mode */
     --chart-1: 265 90% 65%;
@@ -88,76 +88,93 @@
   }
 }
 
+/* Notion-like UI enhancements */
+.notion-like {
+  @apply bg-background text-foreground font-sans;
+}
+
+.notion-card {
+  @apply border border-border bg-card p-4 rounded-lg shadow-sm hover:shadow-md transition-all duration-200;
+}
+
+.notion-heading {
+  @apply font-medium text-foreground tracking-tight;
+}
+
+.notion-text {
+  @apply text-muted-foreground leading-relaxed;
+}
+
 /* Dark mode enhancements */
 .dark .bg-white,
 .dark .bg-slate-50,
 .dark .bg-purple-50 {
-  background-color: rgb(17 24 39); /* bg-gray-900 */
+  background-color: hsl(var(--card)); /* Use card bg color */
 }
 
 .dark .border-purple-100,
 .dark .border-purple-200,
 .dark .border-slate-200 {
-  border-color: rgb(31 41 55); /* border-gray-800 */
+  border-color: hsl(var(--border)); /* Use border color */
 }
 
 .dark .text-slate-800,
 .dark .text-slate-900 {
-  color: rgb(243 244 246); /* text-gray-100 */
+  color: hsl(var(--foreground)); /* Use foreground color */
 }
 
 .dark .text-slate-600,
 .dark .text-slate-700 {
-  color: rgb(209 213 219); /* text-gray-300 */
+  color: hsl(var(--muted-foreground)); /* Use muted foreground */
 }
 
 .dark .text-slate-500 {
-  color: rgb(156 163 175); /* text-gray-400 */
+  color: hsl(var(--muted-foreground)); /* Use muted foreground */
 }
 
 .dark .from-white {
-  --tw-gradient-from: rgb(17 24 39) var(--tw-gradient-from-position); /* from-gray-900 */
-  --tw-gradient-to: rgb(17 24 39 / 0) var(--tw-gradient-to-position);
+  --tw-gradient-from: hsl(var(--background)) var(--tw-gradient-from-position);
+  --tw-gradient-to: hsl(var(--background) / 0) var(--tw-gradient-to-position);
   --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to);
 }
 
 .dark .to-purple-50 {
-  --tw-gradient-to: rgb(31 41 55) var(--tw-gradient-to-position); /* to-gray-800 */
+  --tw-gradient-to: hsl(var(--accent)) var(--tw-gradient-to-position);
 }
 
 .dark .from-slate-50 {
-  --tw-gradient-from: rgb(17 24 39) var(--tw-gradient-from-position); /* from-gray-900 */
-  --tw-gradient-to: rgb(17 24 39 / 0) var(--tw-gradient-to-position);
+  --tw-gradient-from: hsl(var(--background)) var(--tw-gradient-from-position);
+  --tw-gradient-to: hsl(var(--background) / 0) var(--tw-gradient-to-position);
   --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to);
 }
 
-/* Fixed hover states - no circular dependencies */
+/* Fixed hover states */
 .dark .hover\:bg-purple-50:hover {
-  background-color: rgb(31 41 55); /* hover:bg-gray-800 */
+  background-color: hsl(var(--accent));
 }
 
 .dark .hover\:bg-slate-50:hover {
-  background-color: rgb(31 41 55); /* hover:bg-gray-800 */
+  background-color: hsl(var(--accent));
 }
 
 .dark .hover\:text-purple-600:hover {
-  color: rgb(167 139 250); /* hover:text-purple-400 */
+  color: hsl(var(--primary));
 }
 
 .dark .text-purple-600 {
-  color: rgb(167 139 250); /* text-purple-400 */
+  color: hsl(var(--primary));
 }
 
 .dark .text-purple-700 {
-  color: rgb(167 139 250); /* text-purple-400 */
+  color: hsl(var(--primary));
 }
 
 .dark .bg-purple-600 {
-  background-color: rgb(139 92 246); /* bg-purple-500 */
+  background-color: hsl(var(--primary));
 }
 
 .dark .hover\:bg-purple-700:hover {
-  background-color: rgb(124 58 237); /* hover:bg-purple-600 */
+  background-color: hsl(var(--primary-dark, var(--primary)));
 }
 
 @layer utilities {
@@ -166,7 +183,19 @@
     perspective: 1000px;
   }
   
+  .perspective-2000 {
+    perspective: 2000px;
+  }
+  
+  .perspective-3000 {
+    perspective: 3000px;
+  }
+  
   .transform-style-preserve-3d {
+    transform-style: preserve-3d;
+  }
+  
+  .preserve-3d {
     transform-style: preserve-3d;
   }
   
@@ -176,5 +205,175 @@
   
   .rotate-y-180 {
     transform: rotateY(180deg);
+  }
+  
+  /* Animation utilities */
+  .animate-float {
+    animation: float 5s ease-in-out infinite;
+  }
+  
+  .animate-pulse-slow {
+    animation: pulse 3s infinite;
+  }
+  
+  .animate-spin-slow {
+    animation: spin 8s linear infinite;
+  }
+  
+  .animate-spin-reverse {
+    animation: spin 6s linear infinite reverse;
+  }
+  
+  .animate-bounce-slow {
+    animation: bounce 3s infinite;
+  }
+  
+  .animate-glow {
+    animation: glow 2s ease-in-out infinite alternate;
+  }
+  
+  .animate-rainbow-glow {
+    animation: rainbowGlow 6s ease-in-out infinite alternate;
+  }
+  
+  .animate-shimmer {
+    background-size: 200% 100%;
+    animation: shimmer 2s infinite linear;
+    background-image: linear-gradient(
+      90deg,
+      rgba(255, 255, 255, 0) 0%,
+      rgba(255, 255, 255, 0.2) 25%,
+      rgba(255, 255, 255, 0.2) 50%,
+      rgba(255, 255, 255, 0) 100%
+    );
+  }
+  
+  .animate-tilt {
+    animation: tilt 10s infinite alternate;
+  }
+  
+  /* Dark mode specific animations */
+  .dark .animate-glow {
+    animation: darkGlow 2s ease-in-out infinite alternate;
+  }
+  
+  .dark .animate-shimmer {
+    background-image: linear-gradient(
+      90deg,
+      rgba(255, 255, 255, 0) 0%,
+      rgba(255, 255, 255, 0.05) 25%,
+      rgba(255, 255, 255, 0.05) 50%,
+      rgba(255, 255, 255, 0) 100%
+    );
+  }
+}
+
+/* Animation keyframes */
+@keyframes float {
+  0% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+  100% {
+    transform: translateY(0px);
+  }
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.8;
+    transform: scale(0.95);
+  }
+}
+
+@keyframes bounce {
+  0%, 100% {
+    transform: translateY(0);
+    animation-timing-function: cubic-bezier(0.8, 0, 1, 1);
+  }
+  50% {
+    transform: translateY(-15px);
+    animation-timing-function: cubic-bezier(0, 0, 0.2, 1);
+  }
+}
+
+@keyframes glow {
+  from {
+    box-shadow: 0 0 10px -10px rgba(100, 50, 200, 0.5);
+  }
+  to {
+    box-shadow: 0 0 20px 5px rgba(100, 50, 200, 0.3);
+  }
+}
+
+@keyframes darkGlow {
+  from {
+    box-shadow: 0 0 10px -10px rgba(139, 92, 246, 0.3);
+  }
+  to {
+    box-shadow: 0 0 20px 5px rgba(139, 92, 246, 0.2);
+  }
+}
+
+@keyframes rainbowGlow {
+  0% {
+    box-shadow: 0 0 15px rgba(255, 0, 0, 0.7);
+  }
+  16% {
+    box-shadow: 0 0 15px rgba(255, 165, 0, 0.7);
+  }
+  33% {
+    box-shadow: 0 0 15px rgba(255, 255, 0, 0.7);
+  }
+  50% {
+    box-shadow: 0 0 15px rgba(0, 128, 0, 0.7);
+  }
+  66% {
+    box-shadow: 0 0 15px rgba(0, 0, 255, 0.7);
+  }
+  83% {
+    box-shadow: 0 0 15px rgba(75, 0, 130, 0.7);
+  }
+  100% {
+    box-shadow: 0 0 15px rgba(238, 130, 238, 0.7);
+  }
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes shimmer {
+  to {
+    background-position: 200% 0;
+  }
+}
+
+@keyframes tilt {
+  0% {
+    transform: rotateX(0deg) rotateY(0deg);
+  }
+  25% {
+    transform: rotateX(2deg) rotateY(-2deg);
+  }
+  50% {
+    transform: rotateX(0deg) rotateY(0deg);
+  }
+  75% {
+    transform: rotateX(-2deg) rotateY(2deg);
+  }
+  100% {
+    transform: rotateX(0deg) rotateY(0deg);
   }
 }

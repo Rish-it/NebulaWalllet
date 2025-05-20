@@ -34,6 +34,8 @@ import {
   LAMPORTS_PER_SOL,
   Transaction
 } from '@solana/web3.js';
+import { motion } from "framer-motion";
+import AnimatedCoin from "./AnimatedCoin";
 
 // Validator interface
 interface Validator {
@@ -689,17 +691,85 @@ export default function DeFiHub() {
     }
   }, [isTestMode, walletType, validators, userStakes.length]);
 
+  // Add a handler function for the connect wallet button
+  const handleConnectWallet = (e: React.MouseEvent<HTMLButtonElement>) => {
+    e.preventDefault();
+    connectWallet();
+  };
+
+  // Animation variants
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: { 
+      opacity: 1, 
+      transition: { 
+        staggerChildren: 0.1,
+        delayChildren: 0.1
+      }
+    }
+  };
+
+  const itemVariants = {
+    hidden: { opacity: 0, y: 20 },
+    visible: { opacity: 1, y: 0, transition: { duration: 0.5 } }
+  };
+
+  const cardVariants = {
+    hidden: { opacity: 0, scale: 0.9 },
+    visible: { 
+      opacity: 1, 
+      scale: 1,
+      transition: { 
+        duration: 0.5,
+      }
+    },
+    hover: {
+      y: -5,
+      transition: {
+        duration: 0.3
+      }
+    }
+  };
+
   return (
-    <div id="defi" className="py-16">
+    <motion.div 
+      id="defi" 
+      className="py-16"
+      initial="hidden"
+      whileInView="visible"
+      viewport={{ once: true }}
+      variants={containerVariants}
+    >
       <div className="text-center mb-12">
-        <h2 className="text-3xl font-bold text-slate-800 mb-3 dark:text-gray-100">DeFi Hub</h2>
-        <p className="text-slate-600 max-w-2xl mx-auto dark:text-gray-300">
+        <motion.h2 
+          className="text-3xl font-bold text-slate-800 mb-3 dark:text-gray-100"
+          variants={itemVariants}
+        >
+          DeFi Hub
+        </motion.h2>
+        <motion.p 
+          className="text-slate-600 max-w-2xl mx-auto dark:text-gray-300"
+          variants={itemVariants}
+        >
           Access decentralized finance protocols to earn passive income on your crypto assets.
-        </p>
+        </motion.p>
+        
+        {/* Position the AnimatedCoin here */}
+        <motion.div
+          className="relative mx-auto"
+          variants={itemVariants}
+        >
+          <div className="absolute -top-12 right-0 lg:right-20 w-20 h-20 z-10">
+            <AnimatedCoin startDelay={1000} flipDuration={1500} />
+          </div>
+        </motion.div>
         
         {/* Test Mode Controls */}
         {walletType === 'solana' && (
-          <div className="mt-4 flex items-center justify-center gap-2">
+          <motion.div 
+            className="mt-4 flex items-center justify-center gap-2"
+            variants={itemVariants}
+          >
             <Button 
               onClick={toggleTestMode}
               variant={isTestMode ? "default" : "outline"}
@@ -721,7 +791,7 @@ export default function DeFiHub() {
                 Add Test SOL
               </Button>
             )}
-          </div>
+          </motion.div>
         )}
       </div>
 
@@ -943,21 +1013,49 @@ export default function DeFiHub() {
           </div>
         </>
       ) : (
-        <div className="bg-white rounded-3xl p-8 border border-purple-100 shadow-sm text-center dark:bg-gray-900 dark:border-gray-700">
-          <div className="bg-purple-50 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6 dark:bg-gray-800">
+        <motion.div 
+          className="bg-white rounded-3xl p-8 border border-purple-100 shadow-sm text-center dark:bg-gray-900 dark:border-gray-700"
+          variants={cardVariants}
+          whileHover="hover"
+        >
+          <motion.div 
+            className="bg-purple-50 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6 dark:bg-gray-800"
+            animate={{ 
+              rotate: [0, 10, 0, -10, 0],
+            }}
+            transition={{
+              duration: 5,
+              repeat: Infinity,
+              repeatType: "loop"
+            }}
+          >
             <Layers className="h-10 w-10 text-purple-600 dark:text-purple-400" />
-          </div>
-          <h3 className="text-xl font-bold text-slate-800 mb-3 dark:text-gray-100">Connect Your Wallet</h3>
-          <p className="text-slate-600 max-w-md mx-auto mb-6 dark:text-gray-300">
+          </motion.div>
+          <motion.h3 
+            className="text-xl font-bold text-slate-800 mb-3 dark:text-gray-100"
+            variants={itemVariants}
+          >
+            Connect Your Wallet
+          </motion.h3>
+          <motion.p 
+            className="text-slate-600 max-w-md mx-auto mb-6 dark:text-gray-300"
+            variants={itemVariants}
+          >
             Connect your {walletType === 'ethereum' ? 'Ethereum' : walletType === 'solana' ? 'Solana' : 'crypto'} wallet to access DeFi protocols and start earning passive income on your assets.
-          </p>
+          </motion.p>
+          <motion.div
+            variants={itemVariants}
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+          >
           <Button 
-            onClick={connectWallet}
+              onClick={handleConnectWallet}
             className="bg-purple-600 hover:bg-purple-700 text-white rounded-full dark:bg-purple-500 dark:hover:bg-purple-600"
           >
             Connect Wallet
           </Button>
-        </div>
+          </motion.div>
+        </motion.div>
       )}
 
       {/* Protocol Interaction Dialog */}
@@ -1332,6 +1430,6 @@ export default function DeFiHub() {
           )}
         </DialogContent>
       </Dialog>
-    </div>
+    </motion.div>
   );
 } 

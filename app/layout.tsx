@@ -1,29 +1,30 @@
 import type { Metadata } from "next";
-import { Manrope } from "next/font/google";
+import { Inter } from "next/font/google";
 import "./globals.css";
-import { ThemeProvider } from "@/components/themeprovider";
 import { WalletProvider } from "@/context/WalletContext";
-import { Toaster } from "@/components/ui/sonner";
+import { SolanaWalletProvider } from "@/context/SolanaWalletProvider";
+import { EthereumWalletProvider } from "@/context/EthereumWalletProvider";
+import { Toaster } from "sonner";
+import { ThemeProvider } from "@/components/themeprovider";
+import AnimatedPageWrapper from "@/components/AnimatedPageWrapper";
+import SolanaWalletConnector from "@/components/SolanaWalletConnector";
 
-const manrope = Manrope({ subsets: ["latin"] });
+const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "Nebula - Your Gateway to Web3",
-  description: "A secure wallet for managing digital assets, connecting to decentralized applications, and exploring the blockchain ecosystem.",
-  icons: [
-    {
-      rel: "icon",
-      type: "image/x-icon",
-      url: "/favicon-light.ico",
-      media: "(prefers-color-scheme: light)",
-    },
-    {
-      rel: "icon",
-      type: "image/png",
-      url: "/favicon-dark.ico",
-      media: "(prefers-color-scheme: dark)",
-    },
-  ],
+  title: "NebulaWallet",
+  description: "A secure wallet for managing digital assets across multiple blockchains",
+  icons: {
+    icon: [
+      { url: "/nebula.png", sizes: "192x192", type: "image/png" },
+      { url: "/nebula.png", sizes: "64x64", type: "image/png" },
+      { url: "/nebula.png", sizes: "32x32", type: "image/png" },
+    ],
+    apple: [
+      { url: "/nebula.png", sizes: "180x180", type: "image/png" },
+    ],
+    shortcut: [{ url: "/nebula.png" }],
+  },
 };
 
 export default function RootLayout({
@@ -33,17 +34,20 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={`${manrope.className}`}>
-        <ThemeProvider
-          attribute="class"
-          defaultTheme="system"
-          enableSystem
-          disableTransitionOnChange
-        >
-          <WalletProvider>
-            <Toaster />
-            {children}
-          </WalletProvider>
+      <head>
+        <link rel="icon" href="/nebula.png" sizes="any" />
+      </head>
+      <body className={inter.className}>
+        <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+          <EthereumWalletProvider>
+            <SolanaWalletProvider>
+              <WalletProvider>
+                <AnimatedPageWrapper>{children}</AnimatedPageWrapper>
+                <SolanaWalletConnector />
+                <Toaster position="top-right" />
+              </WalletProvider>
+            </SolanaWalletProvider>
+          </EthereumWalletProvider>
         </ThemeProvider>
       </body>
     </html>
