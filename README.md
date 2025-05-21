@@ -1,7 +1,7 @@
 # NebulaWallet
 
 <div align="center">
-  <img src="public/web.png" alt="NebulaWallet Interface" width="100%" />
+  <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQv8iX00ngyKboKu13HT53DegqbaIHEjbICWw&s" alt="NebulaWallet Interface" width="100%" />
 </div>
 
 ## Overview
