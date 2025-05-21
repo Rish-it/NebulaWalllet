@@ -1,7 +1,7 @@
 # NebulaWallet
 
 <div align="center">
-  <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQv8iX00ngyKboKu13HT53DegqbaIHEjbICWw&s" alt="NebulaWallet Interface" width="100%" />
+  <img src="https://www.gettingsmart.com/wp-content/uploads/2022/08/c0e334cb-b270-4be4-a8a2-59f14426370b_Group20562-1024x456.png" alt="NebulaWallet Interface" width="100%" />
 </div>
 
 ## Overview
